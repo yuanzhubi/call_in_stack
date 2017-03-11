@@ -60,13 +60,13 @@ call_in_stack_safe(buf, &printf, "%d%d%p%f%d%s\n", 1, x, buf, 3.0, ++x, "Hello w
 
 Tips:
 
-1.call_in_stack now only supports x86 & x64 in linux with g++ compiler(CLANG or INTEL c++ compiler may be also supported, but I do not test it for lacking utility. Warmly welcome for your help!).
+1.call_in_stack now only supports x86 & x64 in sysv abi with g++ compiler(CLANG or INTEL c++ compiler may be also supported, but I do not test it for lacking utility. Warmly welcome for your help!).
 
 2.call_in_stack is type safe.
 
 要点：
 
-1.call_in_stack 目前只支持在x86和x64上使用g++编译器，clang和intel编译器也可能是支持的，但是我缺乏必要的测试设施。热烈欢迎你们的帮助!
+1.call_in_stack 目前只支持在x86和x64上的sysv abi并使用g++编译器，clang和intel编译器也可能是支持的，但是我缺乏必要的测试设施。热烈欢迎你们的帮助!
 
 2.call_in_stack是类型安全的。
 
