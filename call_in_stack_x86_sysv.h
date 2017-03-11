@@ -7,21 +7,14 @@
 
 #define WORDBITSIZE (8*WORDSIZE)
 
-#define MAX_ARGUMENT_SIZE (2*WORDSIZE)
+#define MAX_ARGUMENT_SIZE (sizeof(long double))
 
 #define MAX_RETUREN_SIZE MAX_ARGUMENT_SIZE
 
-#define STACK_ALIGNMENT_SIZE (4*WORDSIZE)		//After GCC 4.5 it is required for 16bytes stack alignment.
+#define STACK_ALIGNMENT_SIZE (4*WORDSIZE)		//After GCC 4.5 or in Apple MAC, it is required for 16bytes stack alignment.
 
 typedef unsigned int word_int_t;
 
-//In gcc x86(i386) default mode, the stack is 4-byte aligned at the point of function calls! 
-//But for Mac os, the stack is 16-byte aligned at the point of function calls(https://developer.apple.com/library/content/documentation/DeveloperTools/Conceptual/LowLevelABI/130-IA-32_Function_Calling_Conventions/IA32.html), through we do not support long double in x86.
-
-#ifdef __APPLE__
-#undef STACK_ALIGNMENT_SIZE
-#define STACK_ALIGNMENT_SIZE (4*WORDSIZE)
-#endif
 #include "template_util.h"
 
 #define args_list_define(i) \

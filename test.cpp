@@ -9,7 +9,7 @@ using namespace std;
 #ifdef __x86_64__
 typedef long double doublewordtype;
 #else
-typedef long long doublewordtype;
+typedef long double doublewordtype;
 #endif
 void xxz(int a, float b, short c, long d, double e, doublewordtype f,int& g, const int& h,int* i, const int* j){
 
@@ -69,7 +69,8 @@ void t1(doublewordtype a, float b, double c, const float d, const volatile doubl
 	#ifdef __x86_64__
 	printf("%d%Lf\n",*i,a);
 	#else
-	printf("%d%lld\n",*i,a);
+	printf("%d%Lf\n",*i,a);
+	//printf("%d%lld\n",*i,a);
 	#endif
 
 	cout << endl;
@@ -84,7 +85,8 @@ void t2(int a, float b, doublewordtype  c, long d, volatile int e, const double 
 	#ifdef __x86_64__
 	printf("%d%d%Lf\n",*i,j,c);
 	#else
-	printf("%d%d%lld\n",*i,j,c);
+	printf("%d%d%Lf\n",*i,j,c);
+	//printf("%d%d%lld\n",*i,j,c);
 	#endif
 
 	cout << endl;
@@ -99,7 +101,8 @@ int t3(int a, float b, short c, long d, int e, const double f,int &g, const int&
 	#ifdef __x86_64__
 	printf("%d%Lf\n",*i,j);
 	#else
-	printf("%d%lld\n",*i,j);
+	printf("%d%Lf\n",*i,j);
+	//printf("%d%lld\n",*i,j);
 	#endif
 	cout << g << endl;
 	return g;
@@ -116,7 +119,8 @@ void t4(int a, long long b, short c, long d, volatile int e, long long f,int &g,
 	#ifdef __x86_64__
 	printf("%d%Lf\n",*i,j);
 	#else
-	printf("%d%lld\n",*i,j);
+	printf("%d%Lf\n",*i,j);
+	//printf("%d%lld\n",*i,j);
 	#endif
 	cout << endl;
 	// about 4kB stack cost
@@ -185,5 +189,7 @@ int main(){
 	printf( "%d%d%p%f%d\n", 1, z, &z, (double)z, z+1);
 	cout << args_list<char const*, int, int, int*, double, int>::stackword_cost << endl;
 	call_in_stack(buf, &printf, "%d%d%p%f%d\n", 1, z, &z, (double)z, z+1);
+	call_in_stack(buf, &printf, "%d%d%p%f%d%s\n", 1, 2, buf, 3.0, 5, "Hello world!");
+	call_in_stack(buf, &printf, "%d%d%p%Lf%d%s\n", 1, 2, buf, 3.0L, 5, "Hello world!");
 	return 0;
 }
