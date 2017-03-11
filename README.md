@@ -2,9 +2,9 @@ call_in_stack enables you calling function in a new stack! It is very useful in 
 
 call_in_stack 让你在一个新的堆栈中调用函数！协程编程中，这对于节省内存可非常有用。
 
-Coroutines programming is now widely used now in network programming. It reduces the complexity of non-blocking I/O multiplexing. Stackful coroutines enable you writing non-blocking network server like blocking network server. See libgo,libco
+Coroutines programming is now widely used now in network programming. It reduces the complexity of non-blocking I/O multiplexing. Stackful coroutines enable you writing non-blocking network server like blocking network server. See libgo,libco.
 
-协程编程现在已经在网络编程中广泛使用。它减少了非阻塞io多路复用的难度。有栈协程能让你用有阻塞服务器网络服务器的语法去写一个无阻塞网络服务器。可以去看看libgo,libco。
+协程编程现在已经在网络编程中广泛使用。它减少了非阻塞io多路复用的难度。有栈协程能让你用有阻塞网络服务器的语法去写一个无阻塞网络服务器。可以去看看libgo,libco。
 
 But the stack of a stackful coroutine must pre-allocated before its running. For safety, it is usually a large number of memory(usually 64KB-128KB? To print/cout a long double number costs above 6KB stack in glibc of x64 platform). It lows downs the maximum number of coroutines.
 
