@@ -146,7 +146,7 @@ void double_jump1(int a, float b, doublewordtype c, long d, double e, const doub
 }
 struct ag{ag(int){};};
 void ff(ag);
-#include "math.h"
+#include "cmath"
 int main(){
 	/* cout <<change_ref_to_pointer_size<doublewordtype>::size<< _COUNT_OF_SIZE(change_ref_to_pointer_size<doublewordtype>::size, WORDSIZE)<<endl;
 	cout << _ALIGNED_COST(_COUNT_OF_SIZE(change_ref_to_pointer_size<doublewordtype>::size, WORDSIZE), 2)<<endl;
@@ -193,7 +193,9 @@ int main(){
 	call_in_stack(buf, &printf, "%d%d%p%Lf%d%s\n", 1, 2, buf, 3.0L, 5, "Hello world!");
 	double (*plog)( double ) = &log;
 	cout << call_in_stack(4*1024, plog, 2.0) << endl;
-	cout << call_in_stack(4*1024, (double (*)( double ))(&log), 2.0) << endl;
+	float (*pflog)( float ) = &log;
+	cout << call_in_stack(12*1024,pflog, (float)2.0) << endl;
+	cout << call_in_stack((float (*)( float ))(&log), (float)2.0) << endl;
 
 	return 0;
 }

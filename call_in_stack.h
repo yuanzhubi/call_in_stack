@@ -25,6 +25,25 @@ inline char* get_stack_base(char* prev_stack_base){
 
 #define call_in_stack_define(i, j) \
 template <MACRO_JOIN(RECURSIVE_FUNC_, j)(define_typenames_ex_begin, define_typenames_ex, define_typenames_ex) typename T > \
+inline typename function_property<T>::return_type call_in_stack(T dest_func  \
+MACRO_JOIN(RECURSIVE_FUNC_,i)(define_typeargs_begin, define_typeargs, define_typeargs) \
+MACRO_JOIN(RECURSIVE_FUNC_,j)(define_type_args_ex_begin, define_type_args_ex, define_type_args_ex_end) \
+, typename static_asserter< i == function_property<T>::arguments_count >::type *p = 0 ){\
+	const int default_stack_length = 32*1024;\
+	struct auto_stack_buffer{\
+		char* stack_buffer;\
+		auto_stack_buffer(unsigned int the_size):stack_buffer(new char[the_size]){}\
+		~auto_stack_buffer(){delete []stack_buffer;}\
+	}z(default_stack_length);\
+		return call_with_stack_class<typename function_property<T>::return_type>::template call_with_stack< \
+		MACRO_JOIN(RECURSIVE_FUNC_,i)(define_rtypes_begin, define_rtypes, define_rtypes) \
+		MACRO_JOIN(RECURSIVE_FUNC_,j)(define_rtype_ex_begin, define_rtype_ex, define_rtype_ex) \
+		T>( \
+		MACRO_JOIN(RECURSIVE_FUNC_,i)(define_args_begin, define_args, define_args) \
+		MACRO_JOIN(RECURSIVE_FUNC_,j)(define_args_ex_begin, define_args_ex, define_args_ex) \
+		dest_func, get_stack_base< STACK_COST(T) >(z.stack_buffer + default_stack_length) );\
+}\
+template <MACRO_JOIN(RECURSIVE_FUNC_, j)(define_typenames_ex_begin, define_typenames_ex, define_typenames_ex) typename T > \
 inline typename function_property<T>::return_type call_in_stack(unsigned int stack_length, T dest_func  \
 MACRO_JOIN(RECURSIVE_FUNC_,i)(define_typeargs_begin, define_typeargs, define_typeargs) \
 MACRO_JOIN(RECURSIVE_FUNC_,j)(define_type_args_ex_begin, define_type_args_ex, define_type_args_ex_end) \
