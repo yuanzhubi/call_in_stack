@@ -212,6 +212,8 @@ struct args_list<
 	const static int intreg_cost = 0;
 	const static int floatreg_cost = 0;
 	const static int stackword_cost = 0;
+	
+	const static int float_count = 0;
 
 	//it reports in arguments stack style: the last bit(stack_padding_reporter%2) will be one if the last word in stack cost is not wasted for padding.
 	const static int stack_padding_reporter = 0;

@@ -21,6 +21,7 @@ template <typename T>
 struct type_test{
 	const static int floatreg_cost = 0;
 	const static int intreg_cost = 1;
+	const static bool is_float = false;
 };
 
 template <typename T>
@@ -35,18 +36,21 @@ template <>
 struct type_test<float>{
 	const static int floatreg_cost = 1;
 	const static int intreg_cost = 0;
+	const static bool is_float = true;
 };
 
 template <>
 struct type_test<double>{
 	const static int floatreg_cost = 1;
 	const static int intreg_cost = 0;
+	const static bool is_float = true;
 };
 
 template <>
 struct type_test<long double>{
 	const static int floatreg_cost = 0;		//in x64, stack is used for transmitting the long double parameter
 	const static int intreg_cost = 0;
+	const static bool is_float = true;
 };
 
 #define args_list_define(i) \
@@ -58,7 +62,8 @@ struct args_list< MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types
 	\
 	const static int intreg_cost = parent::intreg_cost + ((parent::intreg_cost != parent::max_int_reg_cost_x64_system_v) && (type_test<new_type>::intreg_cost != 0) ? 1 : 0) ; \
 	const static int floatreg_cost = parent::floatreg_cost + ((parent::floatreg_cost != parent::max_float_reg_cost_x64_system_v) && (type_test<new_type>::floatreg_cost != 0) ? 1 : 0); \
-	\
+	const static int float_count = parent::float_count + type_test<new_type>::is_float ? 1 : 0;\
+\
 	const static int addtional_stack_cost =  ((parent::intreg_cost != intreg_cost ) || (parent::floatreg_cost != floatreg_cost))\
 	? 0:_COUNT_OF_SIZE(change_ref_to_pointer_size<new_type>::size, WORDSIZE);\
 	const static int stackword_cost = parent::stackword_cost + ((addtional_stack_cost == 0)? 0 : (_ALIGNED_COST(parent::stackword_cost, addtional_stack_cost)));\
@@ -125,9 +130,9 @@ __attribute__ ((noinline)) static RETURN_TYPE call_with_stack(\
 		func_back1(push_stack_define)					\
 	}\
 \
-	if(arg_types::floatreg_cost > 0 && function_property<T>::has_variable_arguments){\
+	if(arg_types::float_count > 0 && function_property<T>::has_variable_arguments){\
 		__asm__ (	"movq 	%0,  %%rax;			\n\t"	\
-				:: "X"(arg_types::floatreg_cost));	\
+				:: "X"(arg_types::float_count));	\
 	}\
 \
 	if(arg_types::intreg_cost >= 6){					\
