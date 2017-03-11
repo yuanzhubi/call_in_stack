@@ -1,3 +1,5 @@
+For better page experience, see https://github.com/yuanzhubi/call_in_stack/wiki/Welcome-to-call_in_stack.
+
 call_in_stack enables you calling function in a new stack! It is very useful in coroutines programming to save memory.
 
 call_in_stack 让你在一个新的堆栈中调用函数！协程编程中，这对于节省内存可非常有用。
