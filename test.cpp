@@ -154,7 +154,8 @@ int main(){
 	args_list <int , float , doublewordtype  , long , volatile int , const double ,int &, const int& ,int* , const int& >::out_stack_padding_reporter(cout); */
 
 
-	cout << "endl" << endl;			
+    char *d = (char*)malloc(sizeof(buf));
+    call_in_stack_safe(d, sizeof(buf), bb );
 	call_in_stack(buf, sizeof(buf) , bb );
 	call_in_stack(buf, bb );
 	call_in_stack( buf, &bb1, z );
@@ -167,23 +168,24 @@ int main(){
 	call_in_stack(buf ,t8 ,1,2,3,4,5,6,++z, z, &z, z);
 	call_in_stack(buf ,sizeof(buf), t2, 1,2,3,4,5,6,++z, z, &z, 5 );
 	call_in_stack(buf ,t2, 1,2,3,4,5,6,++z, z, &z, 5);
-	char *d = (char*)malloc(sizeof(buf));
+
 	call_in_stack(d, sizeof(buf), bb );
 	call_in_stack(d, sizeof(buf), t1 , 1,2,3,4,5,6,++z, z, &z, z );
 	call_in_stack(d, sizeof(buf), bb );
+
 	free(d);
 	call_in_stack_safe(buf, sizeof(buf), double_jump, 1,2,3,4,5,6,++z, z, &z, z);
 	call_in_stack_safe(buf, double_jump, 1,2,3,4,5,6,++z, z, &z,z);
 	call_in_stack_safe(buf, double_jump1, 1,2,3,4,5,6,++z, z, &z, z);
-	
+
 	// cout << args_list<int , long long , short, long, volatile int, long long ,int &, const int& ,int* >::stackword_cost << endl;
 	// cout << args_list<int , long long , short, long, volatile int, long long ,int &, const int& ,int* , doublewordtype>::stackword_cost << endl;
 	t3(1,2,3,4,5,6,z, z, &z, z );
 	call_in_stack(buf , t3, 1,2,3,4,5,6,++z, z, &z, z) ;
 	call_in_stack_safe(buf, t4, 1,2,3,4,5,6,++z, z, &z, z);
-	
+
 	call_in_stack(8*1024, t1, 1,2,3,4,5,6,++z, z, &z, z );
-	
+
 	cout << call_in_stack(buf, t3, 1,2,3,4,5,6,++z, z, &z, z ) << endl;
 	//cout << function_property<typeof(&printf)>::arguments_count << endl;
 	printf( "%d%d%p%f%d\n", 1, z, &z, (double)z, z+1);
@@ -196,6 +198,6 @@ int main(){
 	float (*pflog)( float ) = &log;
 	cout << call_in_stack(12*1024,pflog, (float)2.0) << endl;
 	cout << call_in_stack((float (*)( float ))(&log), (float)2.0) << endl;
-
+    cout << GCC_VERSION << endl;
 	return 0;
 }

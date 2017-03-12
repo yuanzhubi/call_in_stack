@@ -51,10 +51,10 @@ BATCH_FUNC1(args_list_define)
 			__asm__ ("push "MACRO_TOSTRING(j*WORDSIZE+WORDSIZE)"(%ebp);\n\t");\
 	else 	__asm__ ("lea -"MACRO_TOSTRING(WORDSIZE)"(%esp), %esp;\n\t");}
 
-//MAX_ARGUMENT_SIZE = 2*WORDSIZE, 10*2=20, 
-#define func_back1(func) func(20) func(19) func(18) func(17) func(16) func(15) func(14) func(13) func(12) func(11) func(10) func(9) func(8) func(7) func(6) func(5) func(4) func(3) func(2) func(1)
+//MAX_ARGUMENT_SIZE = 3*WORDSIZE, 10*3=30,
+#define func_back1(func)  func(30) func(29) func(28) func(27) func(26) func(25) func(24) func(23) func(22) func(21) func(20) func(19) func(18) func(17) func(16) func(15) func(14) func(13) func(12) func(11) func(10) func(9) func(8) func(7) func(6) func(5) func(4) func(3) func(2) func(1)
 
-#define func_back(func) func(20) func(19) func(18) func(17) func(16) func(15) func(14) func(13) func(12) func(11) func(10) func(9) func(8) func(7) func(6) func(5) func(4) func(3) func(2) func(1) func(0)
+#define func_back(func) func_back1(func) func(0)
 
 //We save arguments in new stack
 #define STACK_COST(T) (function_property<T>::stackword_cost)
@@ -74,10 +74,10 @@ __attribute__ ((noinline)) static RETURN_TYPE call_with_stack(\
 	RETURN_INSTRUCTION(RETURN_TYPE);		\
 }
 
-template<typename R> 
+template<typename R>
 struct call_with_stack_class;
 
-template<> 
+template<>
 struct call_with_stack_class<void>{
 #define RETURN_TYPE void
 #define RETURN_INSTRUCTION(r_type)
@@ -86,18 +86,21 @@ BATCH_FUNC(call_with_stack_define)
 #undef RETURN_INSTRUCTION
 };
 
-template<typename R> 
+template<typename R>
 struct call_with_stack_class{
 #define RETURN_TYPE R
-//return (R)0; is to cheat compiler text analyse
-#define RETURN_INSTRUCTION(r_type) 	__asm__ ("pop %ebp; ret;\n\t");return (r_type)(0)
+//return (R)0; is to cheat compiler text analyze
+#define RETURN_INSTRUCTION(r_type) 	__asm__ ("pop 	%ebp;\n\t"); __asm__ ("ret;\n\t");dummy_return(r_type);
 BATCH_FUNC(call_with_stack_define)
 typedef assert_not_class_not_largesize<R, MAX_RETUREN_SIZE> assert_instance;
 #undef RETURN_TYPE
 #undef RETURN_INSTRUCTION
 };
 
-#define GET_SP(sp_value) do {__asm__ __volatile__(	"mov 	%%esp,  %0;	\n\t" 	:"=X"(sp_value));}while(false)
-
+//GET_SP is to avoid uninitialized warning
+#define GET_SP(sp_value) __asm__ (	"mov 	%%esp,  %0;	\n\t" 	:"=X"(sp_value))
+#define DEF_SP(sp_value) register char *sp_value asm ("esp"); GET_SP(sp_value)
+//Maybe your compiler does not support register variable? use DEF_SP_BAK instead!
+#define DEF_SP_BAK(sp_value) char *sp_value; GET_SP(sp_value)
 #endif
 #endif

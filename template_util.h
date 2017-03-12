@@ -17,7 +17,7 @@ xfunc(8) \
 xfunc(9) \
 xfunc(10)
 
-#define BATCH_FUNC(xfunc) xfunc(0) BATCH_FUNC1(xfunc) 
+#define BATCH_FUNC(xfunc) xfunc(0) BATCH_FUNC1(xfunc)
 
 #define RECURSIVE_FUNC_0(funcbegin, func, funcend) funcbegin(0)
 #define RECURSIVE_FUNC_1(funcbegin, func, funcend) RECURSIVE_FUNC_0(funcbegin, func, func) funcend(1)
@@ -42,7 +42,7 @@ join_func(i, 6,  xyfunc) \
 join_func(i, 7,  xyfunc) \
 join_func(i, 8,  xyfunc) \
 join_func(i, 9,  xyfunc) \
-join_func(i, 10,  xyfunc) 
+join_func(i, 10,  xyfunc)
 
 #define BI_ONE_BATCH_FUNC(join_func, i, xyfunc) join_func(i, 0, xyfunc) BI_ONE_BATCH_FUNC1(join_func, i, xyfunc)
 
@@ -61,55 +61,56 @@ join_func(i, 10,  xyfunc)
 #define CONCAT_FUNC(i, j, k) MACRO_JOIN(REC_FUNC_, i)(j, k)
 
 #define BI_TWO_BATCH_FUNC1(i, xyfunc) BI_ONE_BATCH_FUNC1(CONCAT_FUNC, i, xyfunc)
+#define BI_TWO_BATCH_FUNC(i, xyfunc) BI_ONE_BATCH_FUNC(CONCAT_FUNC, i, xyfunc)
 
 
-#define define_args_begin(i) 
-#define define_args(i)  MACRO_JOIN(a,i), 
+#define define_args_begin(i)
+#define define_args(i)  MACRO_JOIN(a,i),
 #define define_args_end(i)  MACRO_JOIN(a,i)
 
-#define define_types_begin(i) 
-#define define_types(i) MACRO_JOIN(t,i), 
+#define define_types_begin(i)
+#define define_types(i) MACRO_JOIN(t,i),
 #define define_types_end(i) MACRO_JOIN(t,i)
 
-#define define_rtypes_begin(i) 
-#define define_rtypes(i) typename function_property<T>::MACRO_JOIN(type,i), 
+#define define_rtypes_begin(i)
+#define define_rtypes(i) typename function_property<T>::MACRO_JOIN(type,i),
 #define define_rtypes_end(i) typename function_property<T>::MACRO_JOIN(type,i)
 
-#define define_typenames_begin(i) 
+#define define_typenames_begin(i)
 #define define_typenames(i) typename MACRO_JOIN(t,i),
 #define define_typenames_end(i) typename MACRO_JOIN(t,i)
 
-#define define_typenames_ex_begin(i) 
+#define define_typenames_ex_begin(i)
 #define define_typenames_ex(i) typename MACRO_JOIN(tt,i),
 #define define_typenames_ex_end(i) typename MACRO_JOIN(tt,i)
 
-#define define_rtype_ex_begin(i) 
+#define define_rtype_ex_begin(i)
 #define define_rtype_ex(i) typename remove_cvref<MACRO_JOIN(tt,i)>::type,
 #define define_rtype_ex_end(i) typename remove_cvref<MACRO_JOIN(tt,i)>::type
 
-#define define_type_ex_begin(i) 
+#define define_type_ex_begin(i)
 #define define_type_ex(i) ,MACRO_JOIN(tt,i)
 #define define_type_ex_end(i) ,MACRO_JOIN(tt,i)
 
-#define define_type_args_ex_begin(i) 
+#define define_type_args_ex_begin(i)
 #define define_type_args_ex(i)  , MACRO_JOIN(tt,i) MACRO_JOIN(aa,i)
 #define define_type_args_ex_end(i) ,MACRO_JOIN(tt,i) MACRO_JOIN(aa,i)
 
-#define define_args_ex_begin(i) 
+#define define_args_ex_begin(i)
 #define define_args_ex(i)  MACRO_JOIN(aa,i),
 #define define_args_ex_end(i) MACRO_JOIN(aa,i)
 
-#define define_args_ex_c_begin(i) 
+#define define_args_ex_c_begin(i)
 #define define_args_ex_c(i)  ,MACRO_JOIN(aa,i)
 #define define_args_ex_c_end(i) ,MACRO_JOIN(aa,i)
 
 
-#define define_typeargs_begin(i) 
-#define define_typeargs(i)  , typename function_property<T>::MACRO_JOIN(type,i)  MACRO_JOIN(a,i) 
+#define define_typeargs_begin(i)
+#define define_typeargs(i)  , typename function_property<T>::MACRO_JOIN(type,i)  MACRO_JOIN(a,i)
 #define define_typeargs_end(i) , typename function_property<T>::MACRO_JOIN(type,i)  MACRO_JOIN(a,i)
 
-#define typedefine_types_begin(i) 
-#define typedefine_types(i) typedef MACRO_JOIN(t,i) MACRO_JOIN(type,i); 
+#define typedefine_types_begin(i)
+#define typedefine_types(i) typedef MACRO_JOIN(t,i) MACRO_JOIN(type,i);
 #define typedefine_types_end(i) typedefine_types(i)
 
 #define define_parent_begin(i) define_types_begin(i)
@@ -149,7 +150,7 @@ struct change_ref_to_pointer_size<C&>{
 struct threechar{
 	char c[3];
 	template<typename T>static char is_class_test(int T::*);
-	template<typename T>static threechar is_class_test(...); 
+	template<typename T>static threechar is_class_test(...);
 };
 
 template<bool t>
@@ -172,7 +173,7 @@ struct assert_not_large_type{
 
 //struct parameter, or parameter size beyond expection is not enabled.
 template <typename T, unsigned int max_type_size>
-struct assert_not_class_not_largesize : 
+struct assert_not_class_not_largesize :
 	public assert_not_class<T>, public assert_not_large_type<T, max_type_size>{
 };
 
@@ -193,15 +194,15 @@ struct predicate_attr<R (T::*)(O)>{
 };
 
 template <
-	typename t1=void, typename t2=void, typename t3=void, typename t4=void, typename t5=void, typename t6=void, typename t7=void, typename t8=void, typename t9=void, typename t10=void, 
-	typename t11=void/*, typename t12=void, typename t13=void, typename t14=void, typename t15=void, typename t16=void, typename t17=void, typename t18=void, typename t19=void, typename t20=void, 
+	typename t1=void, typename t2=void, typename t3=void, typename t4=void, typename t5=void, typename t6=void, typename t7=void, typename t8=void, typename t9=void, typename t10=void,
+	typename t11=void/*, typename t12=void, typename t13=void, typename t14=void, typename t15=void, typename t16=void, typename t17=void, typename t18=void, typename t19=void, typename t20=void,
 	typename t21=void, typename t22=void, typename t23=void, typename t24=void, typename t25=void, typename t26=void, typename t27=void, typename t28=void, typename t29=void, typename t30=void*/>
 struct args_list;
 
 
 
 template <>
-struct args_list< 
+struct args_list<
 	void, void, void, void, void, void, void, void, void, void,
 	void/*, void, void, void, void, void, void, void, void, void,
 	void, void, void, void, void, void, void, void, void, void*/>
@@ -212,20 +213,20 @@ struct args_list<
 	const static int intreg_cost = 0;
 	const static int floatreg_cost = 0;
 	const static int stackword_cost = 0;
-	
+
 	const static int float_count = 0;
 
 	//it reports in arguments stack style: the last bit(stack_padding_reporter%2) will be one if the last word in stack cost is not wasted for padding.
 	const static int stack_padding_reporter = 0;
-	
+
 	//following function are used for development debug. It does not generate codes if you do not use them.
 	template<typename O>
 	static void out_stackword_cost(O&  ){}
 	template<typename O>
 	static void out_stack_padding_reporter(O&  ){}
-}; 
+};
 
-template<typename C> 
+template<typename C>
 struct function_property;
 
 #define class_define(i) template<MACRO_JOIN(RECURSIVE_FUNC_,i)(define_typenames_begin, define_typenames, define_typenames) typename R> \
@@ -245,7 +246,7 @@ struct function_property<R (*)(MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin,
 	:public function_property<R (*)(MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types_end)) >\
 {\
 	static const bool has_variable_arguments = true;\
-}; 
+};
 
 BATCH_FUNC(class_define)
 
@@ -256,6 +257,15 @@ BATCH_FUNC(class_define)
 
 //prev_cost % new_cost != 0 ? No!!!!
 //So _ALIGNED_BY(prev, (new_cost)) - (prev) is ready for padding.
-#define _ALIGNED_COST(prev, new_cost) _ALIGNED_BY((prev), (new_cost)) - (prev) + (new_cost) 
+#define _ALIGNED_COST(prev, new_cost) _ALIGNED_BY((prev), (new_cost)) - (prev) + (new_cost)
+
+#define GCC_VERSION (__GNUC__ * 10000 \
+                               + __GNUC_MINOR__ * 100 \
+                               + __GNUC_PATCHLEVEL__)
+#if GCC_VERSION >= 40500
+#define dummy_return(r_type)  __builtin_unreachable();
+#else
+#define dummy_return(r_type) return (r_type)(0);
+#endif
 
 #endif

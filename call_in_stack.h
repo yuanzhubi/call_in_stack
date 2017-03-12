@@ -19,9 +19,9 @@ inline char* get_stack_base(char* prev_stack_base){
 	}
 }
 
-//1.We have arguments passing stack cost and previous sp pointer saving cost in stack before calling. 
+//1.We have arguments passing stack cost and previous sp pointer saving cost in stack before calling.
 //  So we use get_stack_base<cost + 1>(stack_buffer + length) as stack_base.
-//2.Some versions of GCC has a bug that we can not use "static_asserter< i == function_property<T>::arguments_count > *p = 0" to break overload ambiguous(ambiguous error has higher priority than direct SFINAE?). So we use inner type of static_asserter instead. 
+//2.Some versions of GCC has a bug that we can not use "static_asserter< i == function_property<T>::arguments_count > *p = 0" to break overload ambiguous(ambiguous error has higher priority than direct SFINAE?). So we use inner type of static_asserter instead.
 
 #define call_in_stack_define(i, j) \
 template <MACRO_JOIN(RECURSIVE_FUNC_, j)(define_typenames_ex_begin, define_typenames_ex, define_typenames_ex) typename T > \
@@ -88,6 +88,7 @@ MACRO_JOIN(RECURSIVE_FUNC_,j)(define_type_args_ex_begin, define_type_args_ex, de
 		dest_func, get_stack_base< STACK_COST(T) >((char*)(&(stack_buffer[N])) ));\
 }
 BI_TWO_BATCH_FUNC1(10, call_in_stack_define)
+//BI_TWO_BATCH_FUNC1 will render 10*11 times and we do not support pure variable argument lists without any fixed argument(void printf(...); such function does not make sense)
 call_in_stack_define(0,0)
 
 
@@ -98,9 +99,8 @@ inline typename function_property<T>::return_type call_in_stack_safe( char* stac
 MACRO_JOIN(RECURSIVE_FUNC_,i)(define_typeargs_begin, define_typeargs, define_typeargs) \
 MACRO_JOIN(RECURSIVE_FUNC_,j)(define_type_args_ex_begin, define_type_args_ex, define_type_args_ex_end) \
 , typename static_asserter< i == function_property<T>::arguments_count >::type *p = 0 ){\
-	char* sp_value;\
-	GET_SP(sp_value);\
-	if((word_int_t)((((word_int_t)sp_value - (word_int_t)stack_buffer) ^ ((word_int_t)stack_buffer + stack_length - (word_int_t)sp_value))) > 0ll){ \
+	DEF_SP(sp_value);\
+	if(((word_int_t)sp_value > (word_int_t)stack_buffer) && ((word_int_t)sp_value < (word_int_t)stack_buffer + stack_length)){\
 		return dest_func(\
 			MACRO_JOIN(RECURSIVE_FUNC_,i)(define_args_begin, define_args, define_args_end) \
 			MACRO_JOIN(RECURSIVE_FUNC_,j)(define_args_ex_c_begin, define_args_ex_c, define_args_ex_c_end) \
@@ -121,8 +121,7 @@ inline typename function_property<T>::return_type call_in_stack_safe(B (&stack_b
 MACRO_JOIN(RECURSIVE_FUNC_,i)(define_typeargs_begin, define_typeargs, define_typeargs) \
 MACRO_JOIN(RECURSIVE_FUNC_,j)(define_type_args_ex_begin, define_type_args_ex, define_type_args_ex_end) \
 , typename static_asserter< i == function_property<T>::arguments_count >::type *p = 0 ){\
-	char* sp_value;\
-	GET_SP(sp_value);\
+	DEF_SP(sp_value);\
 	if(((word_int_t)(((word_int_t)sp_value - (word_int_t)(&stack_buffer)) ^ ((word_int_t)(&(stack_buffer[N])) - (word_int_t)sp_value))) > 0ll){ \
 		return dest_func(\
 			MACRO_JOIN(RECURSIVE_FUNC_,i)(define_args_begin, define_args, define_args_end) \
@@ -139,7 +138,9 @@ MACRO_JOIN(RECURSIVE_FUNC_,j)(define_type_args_ex_begin, define_type_args_ex, de
 			dest_func, get_stack_base< STACK_COST(T) >((char*)(&(stack_buffer[N])) ));\
 	}\
 }
+
 BI_TWO_BATCH_FUNC1(10, call_in_stack_safe_define)
+//BI_TWO_BATCH_FUNC1 will render 10*11 times and we do not support pure variable argument lists without any fixed argument(void printf(...); such function does not make sense)
 call_in_stack_safe_define(0,0)
 
 #endif

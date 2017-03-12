@@ -7,7 +7,7 @@
 
 #define WORDBITSIZE (8*WORDSIZE)
 
-#define MAX_ARGUMENT_SIZE (2*WORDSIZE)
+#define MAX_ARGUMENT_SIZE (sizeof(long double))
 
 #define MAX_RETUREN_SIZE MAX_ARGUMENT_SIZE
 
@@ -81,7 +81,7 @@ struct args_list< MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types
 		o<<"stack_padding_reporter at " <<i<<"th:"<<stack_padding_reporter<<"\r\n";\
 		parent::out_stack_padding_reporter(o);\
 	}\
-}; 
+};
 BATCH_FUNC1(args_list_define)
 
 //((arg_types::stack_padding_reporter & (((word_int_t)1)<<((word_int_t)(arg_types::stackword_cost-j))%WORDBITSIZE)) != 0) means the space is for padding(and lea is cheaper than push)
@@ -95,7 +95,7 @@ BATCH_FUNC1(args_list_define)
 #define restore_stack_define(j) if(arg_types::stackword_cost == j){\
 	__asm__ ("movq "MACRO_TOSTRING(j*WORDSIZE)"(%rsp), %rsp;\n\t");}
 
-//MAX_ARGUMENT_SIZE = 2*WORDSIZE, 10*2=20, 
+//MAX_ARGUMENT_SIZE = 2*WORDSIZE, 10*2=20,
 //In x64, the "dest_func" argument may be stored at register so we do not know the parameters' address and we should copy arguments beginning from sp+stackword_cost
 #define func_back1(func) func(20) func(19) func(18) func(17) func(16) func(15) func(14) func(13) func(12) func(11) func(10) func(9) func(8) func(7) func(6) func(5) func(4) func(3) func(2) func(1)
 
@@ -147,14 +147,14 @@ __attribute__ ((noinline)) static RETURN_TYPE call_with_stack(\
 	RETURN_INSTRUCTION(RETURN_TYPE);					\
 }
 
-#pragma GCC push_options 
-#pragma GCC optimize ("O2")		
+#pragma GCC push_options
+#pragma GCC optimize ("O2")
 //More than O2 or Os is also enabled. You can set O3 or Os.
 //We use this because we cannot use "naked" attribute in x86 and x64, we will use forced O2 optimization (function O2 attribute maybe ignored by some compilers) instead.
-template<typename R> 
+template<typename R>
 struct call_with_stack_class;
 
-template<> 
+template<>
 struct call_with_stack_class<void>{
 #define RETURN_TYPE void
 #define RETURN_INSTRUCTION(r_type)
@@ -163,48 +163,23 @@ BATCH_FUNC(call_with_stack_define)
 #undef RETURN_INSTRUCTION
 };
 
-template<typename R> 
+template<typename R>
 struct call_with_stack_class{
 #define RETURN_TYPE R
-//return (R)0; is to cheat compiler text analyse
-#define RETURN_INSTRUCTION(r_type) 	__asm__ ("ret;\n\t");return (r_type)(0);
+//return (R)0; is to cheat compiler text analyze
+#define RETURN_INSTRUCTION(r_type) 	__asm__ ("ret;\n\t");dummy_return(r_type);
 BATCH_FUNC(call_with_stack_define)
 typedef assert_not_class_not_largesize<R, MAX_RETUREN_SIZE> assert_instance;
 #undef RETURN_TYPE
 #undef RETURN_INSTRUCTION
 };
 
+#pragma GCC pop_options
 
-/*
-template<typename R> 
-struct call_with_stack_exp_class{
-#define RETURN_TYPE R
-//return (R)0; is to cheat compiler text analyse
-#define RETURN_INSTRUCTION(r_type) 	do{__asm__ ("ret;\n\t");return (r_type)(0); }while(false)
-BATCH_FUNC(call_with_stack_exception_define)
-typedef assert_not_class_not_largesize<R, MAX_RETUREN_SIZE> assert_instance;
-#undef RETURN_TYPE
-#undef RETURN_INSTRUCTION
-};
-*/
-
-#pragma GCC pop_options 
-
-//after arguments passing and save ip pointer, the stack pointer should be at 16x + WORDSIZE bytes(then sp - wordsize must be 16x)
-//GET_ADDRESS_ALIENED is bad implemented because it does not know cost is const.
-/* #define GET_ADDRESS_ALIENED(prev_stack_base, cost)   ((prev_stack_base) - ((((word_int_t)(prev_stack_base)-(cost))&(0x10-1)) ^ WORDSIZE))
-template <int Cost>
-inline char* get_stack_base(char* prev_stack_base){
-	//return prev_stack_base - (((word_int_t)prev_stack_base & (0x10-1)) ^ ((Cost & 0x1)  * WORDSIZE));
-	//but we can help compiler to do optimize
-	if(Cost % 2 == 0){
-		return (char*)(((word_int_t)prev_stack_base) & (~(0x10ull-1)));
-	}else{
-		return prev_stack_base - (((word_int_t)prev_stack_base & (0x10ull-1)) ^ ((Cost & 0x1)  * WORDSIZE));
-	}
-} */
-
-#define GET_SP(sp_value) do{__asm__ __volatile__("movq 	%%rsp,  %0;	\n\t" : "=X"(sp_value));}while(false)
-
+//GET_SP is to avoid uninitialized warning
+#define GET_SP(sp_value) __asm__ ("movq 	%%rsp,  %0;	\n\t" : "=X"(sp_value))
+#define DEF_SP(sp_value) register  char * volatile sp_value asm ("rsp");GET_SP(sp_value)
+//Maybe your compiler does not support register variable? use DEF_SP_BAK instead!
+#define DEF_SP_BAK(sp_value) char *sp_value; GET_SP(sp_value)
 #endif
 #endif
