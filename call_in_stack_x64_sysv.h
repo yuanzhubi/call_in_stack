@@ -9,9 +9,9 @@
 
 #define MAX_ARGUMENT_SIZE (sizeof(long double))
 
-#define MAX_RETUREN_SIZE MAX_ARGUMENT_SIZE
+#define MAX_RETUREN_SIZE (sizeof(long double))
 
-#define STACK_ALIGNMENT_SIZE (2*WORDSIZE)
+#define STACK_ALIGNMENT_SIZE (16)
 
 typedef unsigned long long word_int_t;
 
