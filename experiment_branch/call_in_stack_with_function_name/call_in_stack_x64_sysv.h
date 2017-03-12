@@ -108,40 +108,32 @@ BATCH_FUNC1(args_list_define)
 template <MACRO_JOIN(RECURSIVE_FUNC_,i)(define_typenames_begin, define_typenames, define_typenames) typename T > \
 __attribute__ ((noinline)) static RETURN_TYPE call_with_stack(\
 	MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types)  \
-	T dest_func, char* stack_base ){\
+	T* stack_base ){\
 	typedef args_list<MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types_end)> arg_types; \
-	if(arg_types::intreg_cost >= 6){\
-		__asm__ (	"movq 	%0,  	%%r11;		\n\t" 	\
-					::"X"(dest_func)		\
-				);\
-	}\
-\
-	if(arg_types::stackword_cost == 0 && arg_types::intreg_cost <= 4){\
+	if(arg_types::stackword_cost == 0 && arg_types::intreg_cost <= 5){\
 		__asm__ (	"movq 	%%rsp,  -"MACRO_TOSTRING(WORDSIZE)"(%0);		\n\t" 	\
 					"leaq 	-"MACRO_TOSTRING(WORDSIZE)"(%0),  %%rsp;		\n\t" 	\
 					::"X"(stack_base)	\
-				);\
-	}else{										\
+		);																			\
+	}else{																			\
 		__asm__ (	"movq 	%%rsp,  %%r10;		\n\t" 	\
 					"movq 	%0,  	%%rsp;		\n\t" 	\
 					"pushq 	%%r10;				\n\t"   \
 					::"X"(stack_base)		\
-				);										\
+		);												\
 		func_back1(push_stack_define)					\
 	}\
 \
-	if(arg_types::float_count > 0 && function_property<T>::has_variable_arguments){\
+	if(arg_types::float_count > 0 && function_property<F>::has_variable_arguments){\
 		__asm__ (	"movq 	%0,  %%rax;			\n\t"	\
-				:: "X"(arg_types::float_count));	\
+				:: "X"(arg_types::float_count) \
+		);	\
 	}\
 \
-	if(arg_types::intreg_cost >= 6){					\
-		__asm__ (	"callq 	*%r11;				\n\t");	\
-	}else{												\
-		__asm__ (	"callq	*%0					\n\t"	\
-				::"X"(dest_func)						\
-		);												\
-	}													\
+	__asm__ (	"movq	%0,	%%r11				\n\t"	\
+				"callq	*%%r11					\n\t"	\
+			::"X"(dest_func)							\
+	);													\
 \
 	func_back(restore_stack_define)						\
 	RETURN_INSTRUCTION(RETURN_TYPE);					\
@@ -151,11 +143,11 @@ __attribute__ ((noinline)) static RETURN_TYPE call_with_stack(\
 #pragma GCC optimize ("O2")
 //More than O2 or Os is also enabled. You can set O3 or Os.
 //We use this because we cannot use "naked" attribute in x86 and x64, we will use forced O2 optimization (function O2 attribute maybe ignored by some compilers) instead.
-template<typename R>
+template<typename R, typename F, F dest_func>
 struct call_with_stack_class;
 
-template<>
-struct call_with_stack_class<void>{
+template<typename F, F dest_func>
+struct call_with_stack_class<void,  F, dest_func>{
 #define RETURN_TYPE void
 #define RETURN_INSTRUCTION(r_type)
 BATCH_FUNC(call_with_stack_define)
@@ -163,7 +155,7 @@ BATCH_FUNC(call_with_stack_define)
 #undef RETURN_INSTRUCTION
 };
 
-template<typename R>
+template<typename R, typename F, F dest_func>
 struct call_with_stack_class{
 #define RETURN_TYPE R
 //return (R)0; is to cheat compiler text analyze

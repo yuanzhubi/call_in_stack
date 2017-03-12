@@ -9,9 +9,9 @@
 
 #define MAX_ARGUMENT_SIZE (sizeof(long double))
 
-#define MAX_RETUREN_SIZE MAX_ARGUMENT_SIZE
+#define MAX_RETUREN_SIZE (sizeof(long double))
 
-#define STACK_ALIGNMENT_SIZE (4*WORDSIZE)		//After GCC 4.5 or in Apple MAC, it is required for 16bytes stack alignment.
+#define STACK_ALIGNMENT_SIZE (16)		//After GCC 4.5 or in Apple MAC, it is required for 16 bytes stack alignment.
 
 typedef unsigned int word_int_t;
 
@@ -89,7 +89,7 @@ BATCH_FUNC(call_with_stack_define)
 template<typename R>
 struct call_with_stack_class{
 #define RETURN_TYPE R
-//return (R)0; is to cheat compiler text analyze
+//manually pop 	%ebp because we need manually ret!
 #define RETURN_INSTRUCTION(r_type) 	__asm__ ("pop 	%ebp;\n\t"); __asm__ ("ret;\n\t");dummy_return(r_type);
 BATCH_FUNC(call_with_stack_define)
 typedef assert_not_class_not_largesize<R, MAX_RETUREN_SIZE> assert_instance;

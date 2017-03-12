@@ -88,9 +88,8 @@ MACRO_JOIN(RECURSIVE_FUNC_,j)(define_type_args_ex_begin, define_type_args_ex, de
 		dest_func, get_stack_base< STACK_COST(T) >((char*)(&(stack_buffer[N])) ));\
 }
 BI_TWO_BATCH_FUNC1(10, call_in_stack_define)
-//BI_TWO_BATCH_FUNC1 will render 10*11 times and we do not support pure variable argument lists without any fixed argument(void printf(...); such function does not make sense)
+//BI_TWO_BATCH_FUNC1 will render 10*11 times and we do not support pure variable argument lists without any fixed argument(comparing printf(...) and printf(char*,...); the previous function does not make sense)
 call_in_stack_define(0,0)
-
 
 //call_in_stack_safe is safe for recursively call_in_stack with same stack_buffer(maybe it is a global variable?) as stack.
 #define call_in_stack_safe_define(i, j) \
@@ -140,7 +139,7 @@ MACRO_JOIN(RECURSIVE_FUNC_,j)(define_type_args_ex_begin, define_type_args_ex, de
 }
 
 BI_TWO_BATCH_FUNC1(10, call_in_stack_safe_define)
-//BI_TWO_BATCH_FUNC1 will render 10*11 times and we do not support pure variable argument lists without any fixed argument(void printf(...); such function does not make sense)
+//BI_TWO_BATCH_FUNC1 will render 10*11 times and we do not support pure variable argument lists without any fixed argument(comparing printf(...) and printf(char*,...); the previous function does not make sense)
 call_in_stack_safe_define(0,0)
 
 #endif
