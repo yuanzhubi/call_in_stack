@@ -232,6 +232,8 @@ function get_result(is_copy){
 	catch(e){
 		alert('some error happened. press F12 to debug in console. The error information:' + e.name + ': ' + e.message);
 	}
+	CodeMirror.commands["selectAll"](your_result);
+	your_result.autoFormatRange(your_result.getCursor(true), your_result.getCursor(false));
 }
 String.prototype.replaceAll  = function(s1,s2){     
 	return this.replace(new RegExp(s1,'gm'),s2);     
