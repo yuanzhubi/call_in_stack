@@ -105,10 +105,10 @@ BATCH_FUNC1(args_list_define)
 #define STACK_COST(T) (function_property<T>::stackword_cost + 1)
 
 #define call_with_stack_define(i) \
-template <MACRO_JOIN(RECURSIVE_FUNC_,i)(define_typenames_begin, define_typenames, define_typenames) typename T > \
+template <MACRO_JOIN(RECURSIVE_FUNC_,i)(define_typenames_begin, define_typenames, define_typenames) bool has_variable_arguments > \
 __attribute__ ((noinline)) static RETURN_TYPE call_with_stack(\
 	MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types)  \
-	T dest_func, char* stack_base ){\
+	void* dest_func, char* stack_base ){\
 	typedef args_list<MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types_end)> arg_types; \
 	if(arg_types::intreg_cost >= 6){\
 		__asm__ (	"movq 	%0,  	%%r11;		\n\t" 	\
@@ -130,7 +130,7 @@ __attribute__ ((noinline)) static RETURN_TYPE call_with_stack(\
 		func_back1(push_stack_define)					\
 	}\
 \
-	if(arg_types::float_count > 0 && function_property<T>::has_variable_arguments){\
+	if(arg_types::float_count > 0 && has_variable_arguments){\
 		__asm__ (	"movq 	%0,  %%rax;			\n\t"	\
 				:: "X"(arg_types::float_count));	\
 	}\

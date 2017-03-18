@@ -38,10 +38,10 @@ MACRO_JOIN(RECURSIVE_FUNC_,j)(define_type_args_ex_begin, define_type_args_ex, de
 		return call_with_stack_class<typename function_property<T>::return_type>::template call_with_stack< \
 		MACRO_JOIN(RECURSIVE_FUNC_,i)(define_rtypes_begin, define_rtypes, define_rtypes) \
 		MACRO_JOIN(RECURSIVE_FUNC_,j)(define_rtype_ex_begin, define_rtype_ex, define_rtype_ex) \
-		T>( \
+		function_property<T>::has_variable_arguments>( \
 		MACRO_JOIN(RECURSIVE_FUNC_,i)(define_args_begin, define_args, define_args) \
 		MACRO_JOIN(RECURSIVE_FUNC_,j)(define_args_ex_begin, define_args_ex, define_args_ex) \
-		dest_func, get_stack_base< STACK_COST(T) >(z.stack_buffer + default_stack_length) );\
+		(void*)dest_func, get_stack_base< STACK_COST(T) >(z.stack_buffer + default_stack_length) );\
 }\
 template <MACRO_JOIN(RECURSIVE_FUNC_, j)(define_typenames_ex_begin, define_typenames_ex, define_typenames_ex) typename T > \
 inline typename function_property<T>::return_type call_in_stack(unsigned int stack_length, T dest_func  \
@@ -56,10 +56,10 @@ MACRO_JOIN(RECURSIVE_FUNC_,j)(define_type_args_ex_begin, define_type_args_ex, de
 		return call_with_stack_class<typename function_property<T>::return_type>::template call_with_stack< \
 		MACRO_JOIN(RECURSIVE_FUNC_,i)(define_rtypes_begin, define_rtypes, define_rtypes) \
 		MACRO_JOIN(RECURSIVE_FUNC_,j)(define_rtype_ex_begin, define_rtype_ex, define_rtype_ex) \
-		T>( \
+		function_property<T>::has_variable_arguments>( \
 		MACRO_JOIN(RECURSIVE_FUNC_,i)(define_args_begin, define_args, define_args) \
 		MACRO_JOIN(RECURSIVE_FUNC_,j)(define_args_ex_begin, define_args_ex, define_args_ex) \
-		dest_func, get_stack_base< STACK_COST(T) >(z.stack_buffer + stack_length) );\
+		(void*)dest_func, get_stack_base< STACK_COST(T) >(z.stack_buffer + stack_length) );\
 }\
 template <MACRO_JOIN(RECURSIVE_FUNC_, j)(define_typenames_ex_begin, define_typenames_ex, define_typenames_ex) typename T > \
 inline typename function_property<T>::return_type call_in_stack(char* stack_buffer, unsigned int stack_length, T dest_func \
@@ -69,10 +69,10 @@ MACRO_JOIN(RECURSIVE_FUNC_,j)(define_type_args_ex_begin, define_type_args_ex, de
 		return call_with_stack_class<typename function_property<T>::return_type>::template call_with_stack< \
 		MACRO_JOIN(RECURSIVE_FUNC_,i)(define_rtypes_begin, define_rtypes, define_rtypes) \
 		MACRO_JOIN(RECURSIVE_FUNC_,j)(define_rtype_ex_begin, define_rtype_ex, define_rtype_ex) \
-		T>( \
+		function_property<T>::has_variable_arguments>( \
 		MACRO_JOIN(RECURSIVE_FUNC_,i)(define_args_begin, define_args, define_args) \
 		MACRO_JOIN(RECURSIVE_FUNC_,j)(define_args_ex_begin, define_args_ex, define_args_ex) \
-		dest_func, get_stack_base< STACK_COST(T) >(stack_buffer + stack_length) );\
+		(void*)dest_func, get_stack_base< STACK_COST(T) >(stack_buffer + stack_length) );\
 }\
 template <MACRO_JOIN(RECURSIVE_FUNC_, j)(define_typenames_ex_begin, define_typenames_ex, define_typenames_ex) typename T, typename B, int N > \
 inline typename function_property<T>::return_type call_in_stack(B (&stack_buffer)[N], T dest_func  \
@@ -82,13 +82,13 @@ MACRO_JOIN(RECURSIVE_FUNC_,j)(define_type_args_ex_begin, define_type_args_ex, de
 		return call_with_stack_class<typename function_property<T>::return_type>::template call_with_stack< \
 		MACRO_JOIN(RECURSIVE_FUNC_,i)(define_rtypes_begin, define_rtypes, define_rtypes) \
 		MACRO_JOIN(RECURSIVE_FUNC_,j)(define_rtype_ex_begin, define_rtype_ex, define_rtype_ex) \
-		T>( \
+		function_property<T>::has_variable_arguments>( \
 		MACRO_JOIN(RECURSIVE_FUNC_,i)(define_args_begin, define_args, define_args) \
 		MACRO_JOIN(RECURSIVE_FUNC_,j)(define_args_ex_begin, define_args_ex, define_args_ex) \
-		dest_func, get_stack_base< STACK_COST(T) >((char*)(&(stack_buffer[N])) ));\
+		(void*)dest_func, get_stack_base< STACK_COST(T) >((char*)(&(stack_buffer[N])) ));\
 }
 BI_TWO_BATCH_FUNC1(10, call_in_stack_define)
-//BI_TWO_BATCH_FUNC1 will render 10*11 times and we do not support pure variable argument lists without any fixed argument(comparing printf(...) and printf(char*,...); the previous function does not make sense)
+//BI_TWO_BATCH_FUNC1 will render 11*10 times and we do not support pure variable argument lists without any fixed argument(comparing printf(...) and printf(char*,...); the previous function does not make sense)
 call_in_stack_define(0,0)
 
 //call_in_stack_safe is safe for recursively call_in_stack with same stack_buffer(maybe it is a global variable?) as stack.
@@ -101,7 +101,7 @@ MACRO_JOIN(RECURSIVE_FUNC_,j)(define_type_args_ex_begin, define_type_args_ex, de
 	DEF_SP(sp_value);\
 	if(((word_int_t)sp_value > (word_int_t)stack_buffer) && ((word_int_t)sp_value < (word_int_t)stack_buffer + stack_length)){\
 		return dest_func(\
-			MACRO_JOIN(RECURSIVE_FUNC_,i)(define_args_begin, define_args, define_args_end) \
+			MACRO_JOIN(RECURSIVE_FUNC_,i)(define_args_begin_org, define_args_org, define_args_end_org) \
 			MACRO_JOIN(RECURSIVE_FUNC_,j)(define_args_ex_c_begin, define_args_ex_c, define_args_ex_c_end) \
 		);\
 	} \
@@ -109,10 +109,10 @@ MACRO_JOIN(RECURSIVE_FUNC_,j)(define_type_args_ex_begin, define_type_args_ex, de
 		return call_with_stack_class<typename function_property<T>::return_type>::template call_with_stack< \
 		MACRO_JOIN(RECURSIVE_FUNC_,i)(define_rtypes_begin, define_rtypes, define_rtypes) \
 		MACRO_JOIN(RECURSIVE_FUNC_,j)(define_rtype_ex_begin, define_rtype_ex, define_rtype_ex) \
-		T>( \
+		function_property<T>::has_variable_arguments>( \
 			MACRO_JOIN(RECURSIVE_FUNC_,i)(define_args_begin, define_args, define_args) \
 			MACRO_JOIN(RECURSIVE_FUNC_,j)(define_args_ex_begin, define_args_ex, define_args_ex) \
-			dest_func, get_stack_base< STACK_COST(T) >(stack_buffer + stack_length) );\
+			(void*)dest_func, get_stack_base< STACK_COST(T) >(stack_buffer + stack_length) );\
 	} \
 } \
 template <MACRO_JOIN(RECURSIVE_FUNC_, j)(define_typenames_ex_begin, define_typenames_ex, define_typenames_ex) typename T, typename B, int N > \
@@ -123,7 +123,7 @@ MACRO_JOIN(RECURSIVE_FUNC_,j)(define_type_args_ex_begin, define_type_args_ex, de
 	DEF_SP(sp_value);\
 	if(((word_int_t)(((word_int_t)sp_value - (word_int_t)(&stack_buffer)) ^ ((word_int_t)(&(stack_buffer[N])) - (word_int_t)sp_value))) > 0ll){ \
 		return dest_func(\
-			MACRO_JOIN(RECURSIVE_FUNC_,i)(define_args_begin, define_args, define_args_end) \
+			MACRO_JOIN(RECURSIVE_FUNC_,i)(define_args_begin_org, define_args_org, define_args_end_org) \
 			MACRO_JOIN(RECURSIVE_FUNC_,j)(define_args_ex_c_begin, define_args_ex_c, define_args_ex_c_end) \
 		);\
 	} \
@@ -131,10 +131,10 @@ MACRO_JOIN(RECURSIVE_FUNC_,j)(define_type_args_ex_begin, define_type_args_ex, de
 		return call_with_stack_class<typename function_property<T>::return_type>::template call_with_stack< \
 		MACRO_JOIN(RECURSIVE_FUNC_,i)(define_rtypes_begin, define_rtypes, define_rtypes) \
 		MACRO_JOIN(RECURSIVE_FUNC_,j)(define_rtype_ex_begin, define_rtype_ex, define_rtype_ex) \
-		T>( \
+		function_property<T>::has_variable_arguments>( \
 			MACRO_JOIN(RECURSIVE_FUNC_,i)(define_args_begin, define_args, define_args) \
 			MACRO_JOIN(RECURSIVE_FUNC_,j)(define_args_ex_begin, define_args_ex, define_args_ex) \
-			dest_func, get_stack_base< STACK_COST(T) >((char*)(&(stack_buffer[N])) ));\
+			(void*)dest_func, get_stack_base< STACK_COST(T) >((char*)(&(stack_buffer[N])) ));\
 	}\
 }
 

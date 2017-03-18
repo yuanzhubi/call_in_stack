@@ -56,14 +56,14 @@ BATCH_FUNC1(args_list_define)
 
 #define func_back(func) func_back1(func) func(0)
 
-//We save arguments in new stack
-#define STACK_COST(T) (function_property<T>::stackword_cost)
+//We save arguments and previous sp in new stack
+#define STACK_COST(T) (function_property<T>::stackword_cost + 1)
 
 #define call_with_stack_define(i) \
-template <MACRO_JOIN(RECURSIVE_FUNC_,i)(define_typenames_begin, define_typenames, define_typenames) typename T > \
+template <MACRO_JOIN(RECURSIVE_FUNC_,i)(define_typenames_begin, define_typenames, define_typenames) bool has_variable_arguments> \
 __attribute__ ((noinline)) static RETURN_TYPE call_with_stack(\
 	MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types)  \
-	T dest_func, char* stack_base){\
+	void* dest_func, char* stack_base){\
 	typedef args_list<MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types_end)> arg_types; \
 	__asm__ ("mov 	%0, %%esp;		\n\t" 	\
 				::"X"(stack_base));			\

@@ -64,17 +64,29 @@ join_func(i, 10,  xyfunc)
 #define BI_TWO_BATCH_FUNC(i, xyfunc) BI_ONE_BATCH_FUNC(CONCAT_FUNC, i, xyfunc)
 
 
+#define define_args_begin_org(i)
+#define define_args_org(i)      MACRO_JOIN(a,i),
+#define define_args_end_org(i)  MACRO_JOIN(a,i)
+
+#define define_args_ex_begin_org(i)
+#define define_args_ex_org(i)       MACRO_JOIN(aa,i),
+#define define_args_ex_end_org(i)   MACRO_JOIN(aa,i)
+
 #define define_args_begin(i)
-#define define_args(i)  MACRO_JOIN(a,i),
-#define define_args_end(i)  MACRO_JOIN(a,i)
+#define define_args(i)      united_type<typename function_property<T>::MACRO_JOIN(type,i)>::forward(MACRO_JOIN(a,i)),
+#define define_args_end(i)  united_type<typename function_property<T>::MACRO_JOIN(type,i)>::forward(MACRO_JOIN(a,i))
+
+#define define_args_ex_begin(i)
+#define define_args_ex(i)       united_type<MACRO_JOIN(tt,i)>::forward(MACRO_JOIN(aa,i)),
+#define define_args_ex_end(i)   united_type<MACRO_JOIN(tt,i)>::forward(MACRO_JOIN(aa,i))
 
 #define define_types_begin(i)
 #define define_types(i) MACRO_JOIN(t,i),
 #define define_types_end(i) MACRO_JOIN(t,i)
 
 #define define_rtypes_begin(i)
-#define define_rtypes(i) typename function_property<T>::MACRO_JOIN(type,i),
-#define define_rtypes_end(i) typename function_property<T>::MACRO_JOIN(type,i)
+#define define_rtypes(i) typename united_type<typename function_property<T>::MACRO_JOIN(type,i)>::type,
+#define define_rtypes_end(i) typename united_type<typename function_property<T>::MACRO_JOIN(type,i)>::type
 
 #define define_typenames_begin(i)
 #define define_typenames(i) typename MACRO_JOIN(t,i),
@@ -85,8 +97,8 @@ join_func(i, 10,  xyfunc)
 #define define_typenames_ex_end(i) typename MACRO_JOIN(tt,i)
 
 #define define_rtype_ex_begin(i)
-#define define_rtype_ex(i) typename remove_cvref<MACRO_JOIN(tt,i)>::type,
-#define define_rtype_ex_end(i) typename remove_cvref<MACRO_JOIN(tt,i)>::type
+#define define_rtype_ex(i) typename united_type<MACRO_JOIN(tt,i)>::type,
+#define define_rtype_ex_end(i) typename united_type<MACRO_JOIN(tt,i)>::type
 
 #define define_type_ex_begin(i)
 #define define_type_ex(i) ,MACRO_JOIN(tt,i)
@@ -96,9 +108,7 @@ join_func(i, 10,  xyfunc)
 #define define_type_args_ex(i)  , MACRO_JOIN(tt,i) MACRO_JOIN(aa,i)
 #define define_type_args_ex_end(i) ,MACRO_JOIN(tt,i) MACRO_JOIN(aa,i)
 
-#define define_args_ex_begin(i)
-#define define_args_ex(i)  MACRO_JOIN(aa,i),
-#define define_args_ex_end(i) MACRO_JOIN(aa,i)
+
 
 #define define_args_ex_c_begin(i)
 #define define_args_ex_c(i)  ,MACRO_JOIN(aa,i)
@@ -117,33 +127,98 @@ join_func(i, 10,  xyfunc)
 #define define_parent(i) define_types(i)
 #define define_parent_end(i) void
 
+
+//unite the type is to reduce the size of the binary compile result via reducing types,
+//including union all the pointer and reference type to word_int_t,
+//unsigned and not unsigned integer type to not unsigned.
 template <typename C>
-struct remove_cvref{
+struct united_type{
 	typedef C type;
+	inline static type forward(C arg){
+        return arg;
+	}
 };
 
 template <typename C>
-struct remove_cvref<const C>{
-	typedef C type;
+struct united_type<C*>{
+	typedef word_int_t type;
+    inline static type forward(const C* arg){
+        return (type)arg;
+	}
+};
+template <typename C>
+struct united_type<C&>{
+	typedef word_int_t type;
+    inline static type forward(const C& arg){
+        return (type)(&arg);
+	}
+};
+template <>
+struct united_type<unsigned char>{
+	typedef char type;
+	inline static type forward(unsigned char arg){
+        return (type)arg;
+	}
+};
+template <>
+struct united_type<unsigned short>{
+	typedef short type;
+	inline static type forward(unsigned short arg){
+        return (type)arg;
+	}
+};
+template <>
+struct united_type<unsigned int>{
+	typedef int type;
+	inline static type forward(unsigned int arg){
+        return (type)arg;
+	}
+};
+template <>
+struct united_type<unsigned long>{
+	typedef long type;
+	inline static type forward(unsigned long arg){
+        return (type)arg;
+	}
+};
+template <>
+struct united_type<unsigned long long>{
+	typedef long long type;
+	inline static type forward(unsigned long long arg){
+        return (type)arg;
+	}
 };
 
 template <typename C>
-struct remove_cvref<volatile C>{
-	typedef C type;
+struct united_type<const C>: public united_type<C>{
 };
 
 template <typename C>
-struct remove_cvref<C&>: public remove_cvref<C>{
+struct united_type<volatile C>: public united_type<C>{
+};
+
+template <typename C>
+struct united_type<const C*>: public united_type<C*>{
+};
+
+template <typename C>
+struct united_type<volatile C*>: public united_type<C*>{
+};
+
+template <typename C>
+struct united_type<const C&>: public united_type<C&>{
+};
+
+template <typename C>
+struct united_type<volatile C&>: public united_type<C&>{
 };
 
 template <typename C>
 struct change_ref_to_pointer_size{
-	typedef C type;
 	const static int size = sizeof(C);
 };
 template <typename C>
 struct change_ref_to_pointer_size<C&>{
-	typedef C type;
 	const static int size = sizeof(C*);
 };
 
