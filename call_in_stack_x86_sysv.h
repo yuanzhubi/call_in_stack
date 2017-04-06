@@ -75,22 +75,10 @@ __attribute__ ((noinline)) static RETURN_TYPE call_with_stack(\
 }
 
 template<typename R>
-struct call_with_stack_class;
-
-template<>
-struct call_with_stack_class<void>{
-#define RETURN_TYPE void
-#define RETURN_INSTRUCTION(r_type)
-BATCH_FUNC(call_with_stack_define)
-#undef RETURN_TYPE
-#undef RETURN_INSTRUCTION
-};
-
-template<typename R>
 struct call_with_stack_class{
 #define RETURN_TYPE R
 //manually pop 	%ebp because we need manually ret!
-#define RETURN_INSTRUCTION(r_type) 	__asm__ ("pop 	%ebp;\n\t"); __asm__ ("ret;\n\t");dummy_return(r_type);
+#define RETURN_INSTRUCTION(r_type) 	__asm__ ("pop 	%ebp;\n\t"); __asm__ ("ret;\n\t");DUMMY_RETURN(r_type);
 BATCH_FUNC(call_with_stack_define)
 typedef assert_not_class_not_largesize<R, MAX_RETUREN_SIZE> assert_instance;
 #undef RETURN_TYPE

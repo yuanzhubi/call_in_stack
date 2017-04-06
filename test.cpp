@@ -34,18 +34,20 @@ void bb2(int &c, int d){
 
 #ifdef ENABLE_RIGHT_VALUE_REFERENCE
 #include <utility>
-void b3(int &&c, const int &&d){
+int& b3(int &&c, const int &&d){
     cout << c << d << endl;
     cout << "right_value_test" << endl;
-    cout << __cplusplus << endl;
+    return c;
 }
 
  struct global_struct1{
     global_struct1(){
         int x = 3, y = 6;
-        call_in_stack(b3, 3, 6);
-        call_in_stack(b3, 3, y);
-        call_in_stack(b3, std::move(x), std::move(y));
+        cout << call_in_stack(b3, 3, 6);
+		//C++ 0x support left value reference binding to right value reference
+		//But C++ 11 does not.
+       // cout << call_in_stack(b3, 3, y);
+        cout << call_in_stack(b3, std::move(x), std::move(y)) << endl;
     }
 }_test1;
 

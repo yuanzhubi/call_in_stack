@@ -89,11 +89,11 @@ BATCH_FUNC1(args_list_define)
 
 #define push_stack_define(j) if(arg_types::stackword_cost >= j ){\
 	if((arg_types::stack_padding_reporter & (((word_int_t)1)<<((word_int_t)(arg_types::stackword_cost-j))%WORDBITSIZE)) != 0) \
-			__asm__ ("pushq "MACRO_TOSTRING(j*WORDSIZE)"(%r10);\n\t");\
-	else 	__asm__ ("leaq -"MACRO_TOSTRING(WORDSIZE)"(%rsp), %rsp;\n\t");}
+			__asm__ ("pushq " MACRO_TOSTRING(j*WORDSIZE) "(%r10);\n\t");\
+	else 	__asm__ ("leaq -" MACRO_TOSTRING(WORDSIZE) "(%rsp), %rsp;\n\t");}
 
 #define restore_stack_define(j) if(arg_types::stackword_cost == j){\
-	__asm__ ("movq "MACRO_TOSTRING(j*WORDSIZE)"(%rsp), %rsp;\n\t");}
+	__asm__ ("movq " MACRO_TOSTRING(j*WORDSIZE) "(%rsp), %rsp;\n\t");}
 
 //MAX_ARGUMENT_SIZE = 2*WORDSIZE, 10*2=20,
 //In x64, the "dest_func" argument may be stored at register so we do not know the parameters' address and we should copy arguments beginning from sp+stackword_cost
@@ -110,15 +110,16 @@ __attribute__ ((noinline)) static RETURN_TYPE call_with_stack(\
 	MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types)  \
 	void* dest_func, char* stack_base ){\
 	typedef args_list<MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types_end)> arg_types; \
-	if(arg_types::intreg_cost >= 6){\
+	INIT_INSTRUCTION(RETURN_TYPE) \
+ 	if(arg_types::intreg_cost >= 6){\
 		__asm__ (	"movq 	%0,  	%%r11;		\n\t" 	\
 					::"X"(dest_func)		\
 				);\
 	}\
 \
 	if(arg_types::stackword_cost == 0 && arg_types::intreg_cost <= 4){\
-		__asm__ (	"movq 	%%rsp,  -"MACRO_TOSTRING(WORDSIZE)"(%0);		\n\t" 	\
-					"leaq 	-"MACRO_TOSTRING(WORDSIZE)"(%0),  %%rsp;		\n\t" 	\
+		__asm__ (	"movq 	%%rsp,  -" MACRO_TOSTRING(WORDSIZE) "(%0);		\n\t" 	\
+					"leaq 	-" MACRO_TOSTRING(WORDSIZE) "(%0),  %%rsp;		\n\t" 	\
 					::"X"(stack_base)	\
 				);\
 	}else{										\
@@ -151,28 +152,20 @@ __attribute__ ((noinline)) static RETURN_TYPE call_with_stack(\
 #pragma GCC optimize ("O2")
 //More than O2 or Os is also enabled. You can set O3 or Os.
 //We use this because we cannot use "naked" attribute in x86 and x64, we will use forced O2 optimization (function O2 attribute maybe ignored by some compilers) instead.
-template<typename R>
-struct call_with_stack_class;
 
-template<>
-struct call_with_stack_class<void>{
-#define RETURN_TYPE void
-#define RETURN_INSTRUCTION(r_type)
-BATCH_FUNC(call_with_stack_define)
-#undef RETURN_TYPE
-#undef RETURN_INSTRUCTION
-};
 
 template<typename R>
 struct call_with_stack_class{
 #define RETURN_TYPE R
-//return (R)0; is to cheat compiler text analyze
-#define RETURN_INSTRUCTION(r_type) 	__asm__ ("ret;\n\t");dummy_return(r_type);
+#define INIT_INSTRUCTION(r_type)
+#define RETURN_INSTRUCTION(r_type) 	  	__asm__ ("ret;\n\t");DUMMY_RETURN(r_type);
 BATCH_FUNC(call_with_stack_define)
 typedef assert_not_class_not_largesize<R, MAX_RETUREN_SIZE> assert_instance;
 #undef RETURN_TYPE
+#undef INIT_INSTRUCTION
 #undef RETURN_INSTRUCTION
 };
+
 
 #pragma GCC pop_options
 

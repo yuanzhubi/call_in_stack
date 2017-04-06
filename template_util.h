@@ -222,7 +222,9 @@ struct united_type<const C&>: public united_type<C&>{
 template <typename C>
 struct united_type<C&&>: public united_type<C&>{
 };
-#endif
+#endif //ENABLE_RIGHT_VALUE_REFERENCE
+
+
 template <typename C>
 struct change_ref_to_pointer_size{
 	const static int size = sizeof(C);
@@ -236,7 +238,8 @@ struct change_ref_to_pointer_size<C&>{
 template <typename C>
 struct change_ref_to_pointer_size<C&&> : public change_ref_to_pointer_size<C&>{
 };
-#endif
+#endif //ENABLE_RIGHT_VALUE_REFERENCE
+
 
 struct threechar{
 	char c[3];
@@ -276,7 +279,6 @@ template <
 	typename t11=void/*, typename t12=void, typename t13=void, typename t14=void, typename t15=void, typename t16=void, typename t17=void, typename t18=void, typename t19=void, typename t20=void,
 	typename t21=void, typename t22=void, typename t23=void, typename t24=void, typename t25=void, typename t26=void, typename t27=void, typename t28=void, typename t29=void, typename t30=void*/>
 struct args_list;
-
 
 
 template <>
@@ -334,16 +336,49 @@ BATCH_FUNC(class_define)
 #define _COUNT_OF_SIZE(new_type_size, wordsize) (_ALIGNED_BY(new_type_size, wordsize) / (wordsize))
 
 //prev_cost % new_cost != 0 ? No!!!!
-//So _ALIGNED_BY(prev, (new_cost)) - (prev) is ready for padding.
+//So _ALIGNED_BY((prev), (new_cost)) - (prev) is ready for padding.
 #define _ALIGNED_COST(prev, new_cost) _ALIGNED_BY((prev), (new_cost)) - (prev) + (new_cost)
 
 #define GCC_VERSION (__GNUC__ * 10000 \
-                               + __GNUC_MINOR__ * 100 \
+                        + __GNUC_MINOR__ * 100 \
                                + __GNUC_PATCHLEVEL__)
 #if GCC_VERSION >= 40500
-#define dummy_return(r_type)  __builtin_unreachable();
+#define DUMMY_RETURN(r_type)  __builtin_unreachable();
 #else
-#define dummy_return(r_type) return (r_type)(0);
+#define DUMMY_RETURN(r_type) return r_type(0);
 #endif
+
+template <typename C>
+struct return_type_adapter{
+    typedef C forward_type;
+	inline static C forward(forward_type arg){
+        return arg;
+	}
+};
+
+template < >
+struct return_type_adapter<void>{
+    typedef int forward_type;
+	inline static void forward(forward_type){
+	}
+};
+
+template <typename C>
+struct return_type_adapter<C&>{
+    typedef C* forward_type;
+	inline static C& forward(forward_type arg){
+        return *arg;
+	}
+};
+
+#ifdef ENABLE_RIGHT_VALUE_REFERENCE
+template <typename C>
+struct return_type_adapter<C&&>{
+    typedef C* forward_type;
+	inline static C&& forward(forward_type arg){
+        return (C&&)(*arg);
+	}
+};
+#endif //ENABLE_RIGHT_VALUE_REFERENCE
 
 #endif
