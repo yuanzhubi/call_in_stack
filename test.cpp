@@ -3,9 +3,7 @@
 #include "stdio.h"
 
 using namespace std;
-//#include "type_traits.h"
 #include "call_in_stack.h"
-//#include "call_in_stack_prepare_x64.h"
 #ifdef __x86_64__
 typedef long double doublewordtype;
 #else
@@ -16,7 +14,7 @@ void xxz(int a, float b, short c, long d, double e, doublewordtype f,int& g, con
 	/*cout << a << b << c << d << e << f << g << h << *i << *j << endl;*/
 }
 int z = 3;
-#define void int
+//#define void int
 void bb(){
 	++z;
 	cout << z << endl;
@@ -34,7 +32,24 @@ void bb2(int &c, int d){
 	cout << d << endl;
 }
 
+#ifdef ENABLE_RIGHT_VALUE_REFERENCE
+#include <utility>
+void b3(int &&c, const int &&d){
+    cout << c << d << endl;
+    cout << "right_value_test" << endl;
+    cout << __cplusplus << endl;
+}
 
+ struct global_struct1{
+    global_struct1(){
+        int x = 3, y = 6;
+        call_in_stack(b3, 3, 6);
+        call_in_stack(b3, 3, y);
+        call_in_stack(b3, std::move(x), std::move(y));
+    }
+}_test1;
+
+#endif
 
 __attribute__ ((noinline))  void tb(int a, int b, int c, int d, int e, int f,int g, short h,int i, short j, int k = 0, char l = 0){
  	cout  << &a  << endl;
@@ -46,18 +61,20 @@ __attribute__ ((noinline))  void tb(int a, int b, int c, int d, int e, int f,int
 	cout<< &l << endl;
 }
 
-void t0(int a, int b, double c, const float d, const volatile double e, const double f,int &g, const int& h,int* i, const int& j){
+short t0(int a, int b, double c, const float d, const volatile double e, const double f,int &g, const int& h,int* i, const int& j){
     doublewordtype xx = f;
 	cout << xx << a << b << c << d << e << f << g << h << *i << j << f << endl;
 	cout <<"typical0"  << endl;
 	cout << endl;
+    return 0;
 	// about 4kB stack cost
 }
-void t8(int a, float b, double c, const float d, const volatile double e, const double f,int &g, const int& h,int* i, const int& j){
+double t8(int a, float b, double c, const float d, const volatile double e, const double f,int &g, const int& h,int* i, const int& j){
     doublewordtype xx = f;
 	cout << xx << a << b << c << d << e << f << g << h << *i << j << f << endl;
 	cout <<"typical8"  << endl;
 	cout << endl;
+	return -8;
 	// about 4kB stack cost
 }
 void t1(doublewordtype a, float b, double c, const float d, const volatile double e, const double f,int &g, const int& h,int* i, const int& j){
@@ -76,8 +93,8 @@ void t1(doublewordtype a, float b, double c, const float d, const volatile doubl
 	cout << endl;
 	// about 4kB stack cost
 }
-
-void t2(int a, float b, doublewordtype  c, long d, volatile int e, const double f,int &g, const int& h,int* i, const int& j){
+typedef int(*new_type)(const char*);
+new_type t2(int a, float b, doublewordtype  c, long d, volatile int e, const double f,int &g, const int& h,int* i, const int& j){
     doublewordtype xx = f;
 	//cout << &xx << &a << &b << &c << &d << &e << &f << &g << &h << &i << &j << &xx << endl;
 	cout << xx << a << b << c << d << e << f << g << h << *i << j << xx << endl;
@@ -90,6 +107,7 @@ void t2(int a, float b, doublewordtype  c, long d, volatile int e, const double 
 	#endif
 
 	cout << endl;
+	return &puts;
 	// about 4kB stack cost
 }
 
@@ -109,7 +127,7 @@ int t3(int a, float b, short c, long d, int e, const double f,int &g, const int&
 	// about 4kB stack cost
 }
 
-void t4(int a, long long b, short c, long d, volatile int e, long long f,int &g, const int& h,int* i, doublewordtype j){
+char t4(int a, long long b, short c, long d, volatile int e, long long f,int &g, const int& h,int* i, doublewordtype j){
     doublewordtype xx = f;
 	cout << &i << endl;
 	cout << &j << endl;
@@ -123,6 +141,7 @@ void t4(int a, long long b, short c, long d, volatile int e, long long f,int &g,
 	//printf("%d%lld\n",*i,j);
 	#endif
 	cout << endl;
+	return 'a';
 	// about 4kB stack cost
 }
 
@@ -153,7 +172,6 @@ int main(){
 	args_list <int , float , doublewordtype  , long , volatile int , const double ,int &, const int& ,int* , const int& >::out_stackword_cost(cout);
 	args_list <int , float , doublewordtype  , long , volatile int , const double ,int &, const int& ,int* , const int& >::out_stack_padding_reporter(cout); */
 
-
     char *d = (char*)malloc(sizeof(buf));
     call_in_stack_safe(d, sizeof(buf), bb );
 	call_in_stack(buf, sizeof(buf) , bb );
@@ -166,7 +184,7 @@ int main(){
 	call_in_stack(buf ,t0, 1,2,3,4,5,6,++z, z, &z, z);
 	call_in_stack(buf ,t1 ,1,2,3,4,5,6,++z, z, &z, z);
 	call_in_stack(buf ,t8 ,1,2,3,4,5,6,++z, z, &z, z);
-	call_in_stack(buf ,sizeof(buf), t2, 1,2,3,4,5,6,++z, z, &z, 5 );
+	call_in_stack(buf ,sizeof(buf), t2, 1,2,3,4,5,6,++z, z, &z, 5 )("This is a jock");
 	call_in_stack(buf ,t2, 1,2,3,4,5,6,++z, z, &z, 5);
 
 	call_in_stack(d, sizeof(buf), bb );

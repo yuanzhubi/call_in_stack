@@ -153,6 +153,15 @@ struct united_type<C&>{
         return (type)(&arg);
 	}
 };
+
+template <typename C>
+struct united_type<volatile C&>{
+    typedef word_int_t type;
+    inline static type forward(volatile C& arg){
+        return (type)(&arg);
+	}
+};
+
 template <>
 struct united_type<unsigned char>{
 	typedef char type;
@@ -209,10 +218,11 @@ template <typename C>
 struct united_type<const C&>: public united_type<C&>{
 };
 
+#ifdef ENABLE_RIGHT_VALUE_REFERENCE
 template <typename C>
-struct united_type<volatile C&>: public united_type<C&>{
+struct united_type<C&&>: public united_type<C&>{
 };
-
+#endif
 template <typename C>
 struct change_ref_to_pointer_size{
 	const static int size = sizeof(C);
@@ -221,6 +231,12 @@ template <typename C>
 struct change_ref_to_pointer_size<C&>{
 	const static int size = sizeof(C*);
 };
+
+#ifdef ENABLE_RIGHT_VALUE_REFERENCE
+template <typename C>
+struct change_ref_to_pointer_size<C&&> : public change_ref_to_pointer_size<C&>{
+};
+#endif
 
 struct threechar{
 	char c[3];
@@ -232,7 +248,9 @@ template<bool t>
 struct static_asserter;
 
 template<>
-struct static_asserter<true>{typedef int* type;};
+struct static_asserter<true>{
+    typedef int* type;
+};
 
 #define STATIC_ASSERTER(name, value) typedef static_asserter<value> name;
 
@@ -252,22 +270,7 @@ struct assert_not_class_not_largesize :
 	public assert_not_class<T>, public assert_not_large_type<T, max_type_size>{
 };
 
-template <typename Ptr>
-struct predicate_attr;
-
-template <typename R, typename O>
-struct predicate_attr<R (*)(O)>{
-	typedef R return_type;
-	typedef O object_type;
-};
-
-template <typename R, typename O, typename T>
-struct predicate_attr<R (T::*)(O)>{
-	typedef T class_type;
-	typedef R return_type;
-	typedef O object_type;
-};
-
+//In fact we only support 10 arguments.
 template <
 	typename t1=void, typename t2=void, typename t3=void, typename t4=void, typename t5=void, typename t6=void, typename t7=void, typename t8=void, typename t9=void, typename t10=void,
 	typename t11=void/*, typename t12=void, typename t13=void, typename t14=void, typename t15=void, typename t16=void, typename t17=void, typename t18=void, typename t19=void, typename t20=void,

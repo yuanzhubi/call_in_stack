@@ -1,6 +1,10 @@
 #ifndef _CALLINSTACK_H_
 #define _CALLINSTACK_H_
 
+//Using ENABLE_RIGHT_VALUE_REFERENCE if your GCC version and compiler option supports right value reference!
+//#define ENABLE_RIGHT_VALUE_REFERENCE
+
+
 #include "call_in_stack_x64_sysv.h"
 #include "call_in_stack_x86_sysv.h"
 
@@ -29,7 +33,7 @@ inline typename function_property<T>::return_type call_in_stack(T dest_func  \
 MACRO_JOIN(RECURSIVE_FUNC_,i)(define_typeargs_begin, define_typeargs, define_typeargs) \
 MACRO_JOIN(RECURSIVE_FUNC_,j)(define_type_args_ex_begin, define_type_args_ex, define_type_args_ex_end) \
 , typename static_asserter< i == function_property<T>::arguments_count >::type *p = 0 ){\
-	const int default_stack_length = 32*1024;\
+	const int default_stack_length = 16*1024;\
 	struct auto_stack_buffer{\
 		char* stack_buffer;\
 		auto_stack_buffer(unsigned int the_size):stack_buffer(new char[the_size]){}\
