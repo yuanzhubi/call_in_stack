@@ -1,12 +1,7 @@
 #ifndef _CALLINSTACK_H_
 #define _CALLINSTACK_H_
 
-//Using ENABLE_RIGHT_VALUE_REFERENCE if your GCC version and compiler option supports right value reference!
-//#define ENABLE_RIGHT_VALUE_REFERENCE
-
-
-#include "call_in_stack_x64_sysv.h"
-#include "call_in_stack_x86_sysv.h"
+#include "call_in_stack_config.h"
 
 
 //after arguments passing and save ip pointer, the stack pointer should be at 16x + WORDSIZE bytes(then sp - wordsize must be 16x)
@@ -22,6 +17,7 @@ inline char* get_stack_base(char* prev_stack_base){
 		return prev_stack_base - (((word_int_t)prev_stack_base & (STACK_ALIGNMENT_SIZE-1)) ^ (((Cost + 2)  * WORDSIZE) & (STACK_ALIGNMENT_SIZE-1)));
 	}
 }
+
 
 //1.We have arguments passing stack cost and previous sp pointer saving cost in stack before calling.
 //  So we use get_stack_base<cost + 1>(stack_buffer + length) as stack_base.
@@ -107,7 +103,7 @@ inline typename function_property<T>::return_type call_in_stack_safe( char* stac
 MACRO_JOIN(RECURSIVE_FUNC_,i)(define_typeargs_begin, define_typeargs, define_typeargs) \
 MACRO_JOIN(RECURSIVE_FUNC_,j)(define_type_args_ex_begin, define_type_args_ex, define_type_args_ex_end) \
 , typename static_asserter< i == function_property<T>::arguments_count >::type *p = 0 ){ \
-	DEF_SP(sp_value); \
+	DEF_SP(sp_value) \
 	if(((word_int_t)sp_value > (word_int_t)stack_buffer) && ((word_int_t)sp_value < (word_int_t)stack_buffer + stack_length)){ \
 		return dest_func( \
 			MACRO_JOIN(RECURSIVE_FUNC_,i)(define_args_begin_org, define_args_org, define_args_end_org) \
@@ -130,7 +126,7 @@ inline typename function_property<T>::return_type call_in_stack_safe(B (&stack_b
 MACRO_JOIN(RECURSIVE_FUNC_,i)(define_typeargs_begin, define_typeargs, define_typeargs) \
 MACRO_JOIN(RECURSIVE_FUNC_,j)(define_type_args_ex_begin, define_type_args_ex, define_type_args_ex_end) \
 , typename static_asserter< i == function_property<T>::arguments_count >::type *p = 0 ){ \
-	DEF_SP(sp_value); \
+	DEF_SP(sp_value) \
 	if(((word_int_t)(((word_int_t)sp_value - (word_int_t)(&stack_buffer)) ^ ((word_int_t)(&(stack_buffer[N])) - (word_int_t)sp_value))) > 0ll){ \
 		return dest_func( \
 			MACRO_JOIN(RECURSIVE_FUNC_,i)(define_args_begin_org, define_args_org, define_args_end_org) \
@@ -152,5 +148,12 @@ MACRO_JOIN(RECURSIVE_FUNC_,j)(define_type_args_ex_begin, define_type_args_ex, de
 BI_TWO_BATCH_FUNC1(10, call_in_stack_safe_define)
 //BI_TWO_BATCH_FUNC1 will render 10*11 times and we do not support pure variable argument lists without any fixed argument(comparing printf(...) and printf(char*,...); the previous function does not make sense)
 call_in_stack_safe_define(0,0)
+
+// adapter of member function
+#define from_member_fun(class_obj, member_name) &member_function_wrapper<__typeof__(&change_ref_to_pointer_size<__typeof__(class_obj)>::content_type::member_name)>::exec, \
+member_function_wrapper<__typeof__(&change_ref_to_pointer_size<__typeof__(class_obj)>::content_type::member_name)>(class_obj, &change_ref_to_pointer_size<__typeof__(class_obj)>::content_type::member_name)
+
+// adapter of functor or lambda
+#define from_functor(class_obj) from_member_fun(class_obj, operator())
 
 #endif

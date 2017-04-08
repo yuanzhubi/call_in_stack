@@ -146,7 +146,10 @@ char t4(int a, long long b, short c, long d, volatile int e, long long f,int &g,
 	return 'a';
 	// about 4kB stack cost
 }
-
+void long_double_test(){
+	//cout << (long double)123456789.1234567 << endl;
+	printf("%Lf\n",(long double)123456789.1234567);
+}
 char buf[24*1024];
 int ibuf[2048];
 void double_jump(int a, float b, doublewordtype c, long d, double e, const double f,int &g, const int& h,int* i, const int& j){
@@ -168,6 +171,16 @@ void double_jump1(int a, float b, doublewordtype c, long d, double e, const doub
 struct ag{ag(int){};};
 void ff(ag);
 #include "cmath"
+#include <string>
+#include <stdarg.h>
+struct class_test{
+	int src;
+	int operator()(const char * format, const char* str, int d){
+		 printf(format, str, d);
+		cout << "functor_test: " << src  << endl;
+		return 8866;
+	}
+}functor_test;
 int main(){
 	/* cout <<change_ref_to_pointer_size<doublewordtype>::size<< _COUNT_OF_SIZE(change_ref_to_pointer_size<doublewordtype>::size, WORDSIZE)<<endl;
 	cout << _ALIGNED_COST(_COUNT_OF_SIZE(change_ref_to_pointer_size<doublewordtype>::size, WORDSIZE), 2)<<endl;
@@ -218,6 +231,20 @@ int main(){
 	float (*pflog)( float ) = &log;
 	cout << call_in_stack(12*1024,pflog, (float)2.0) << endl;
 	cout << call_in_stack((float (*)( float ))(&log), (float)2.0) << endl;
+	call_in_stack(4*1024, long_double_test);
+
+	string test_string("Hello world");
+	cout << call_in_stack(from_member_fun(test_string,size)) << endl;
+    cout << call_in_stack(from_member_fun(test_string,c_str)) << endl;
+    //sorry I can not support overloaded member function like following "at", because I can not give a convenient interface for you.
+    //cout << call_in_stack(from_member_fun(test_string,at) , 5) << endl;
+    call_in_stack(from_member_fun(test_string, reserve) , 8);
+    cout << call_in_stack(from_member_fun(test_string,data)) << endl;
+	functor_test.src = 1024;
+	cout << call_in_stack(from_functor(functor_test),"%s%d\n", "Hello boy,", 1024)<< endl;
+	functor_test.src = 4201;
+	cout << call_in_stack(from_functor(functor_test),"%s%d\n", "Hello boy,", 1024) << endl;
+	cout << "Ok !" << endl;
     cout << GCC_VERSION << endl;
 	return 0;
 }

@@ -83,6 +83,7 @@ struct args_list< MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types
 	}\
 };
 BATCH_FUNC1(args_list_define)
+#undef args_list_define
 
 //((arg_types::stack_padding_reporter & (((word_int_t)1)<<((word_int_t)(arg_types::stackword_cost-j))%WORDBITSIZE)) != 0) means the space is for padding(and lea is cheaper than push)
 // Here "%WORDBITSIZE" is to escape from shifting overflow warning...
@@ -145,7 +146,7 @@ __attribute__ ((noinline)) static RETURN_TYPE call_with_stack(\
 	}													\
 \
 	func_back(restore_stack_define)						\
-	RETURN_INSTRUCTION(RETURN_TYPE);					\
+	RETURN_INSTRUCTION(RETURN_TYPE)					\
 }
 
 #pragma GCC push_options
@@ -165,14 +166,18 @@ typedef assert_not_class_not_largesize<R, MAX_RETUREN_SIZE> assert_instance;
 #undef INIT_INSTRUCTION
 #undef RETURN_INSTRUCTION
 };
+#undef call_with_stack_define
+#undef push_stack_define
+#undef restore_stack_define
 
+#undef func_back
+#undef func_back1
 
 #pragma GCC pop_options
 
-//GET_SP is to avoid uninitialized warning
-#define GET_SP(sp_value) __asm__ ("movq 	%%rsp,  %0;	\n\t" : "=X"(sp_value))
-#define DEF_SP(sp_value) register  char * volatile sp_value asm ("rsp");GET_SP(sp_value)
+#define DEF_SP(sp_value) DECL_REG_VAR(char*, sp_value, rsp)
 //Maybe your compiler does not support register variable? use DEF_SP_BAK instead!
+#define GET_SP(sp_value) __asm__ ("movq 	%%rsp,  %0;	\n\t" : "=X"(sp_value))
 #define DEF_SP_BAK(sp_value) char *sp_value; GET_SP(sp_value)
 #endif
 #endif

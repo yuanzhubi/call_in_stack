@@ -65,18 +65,20 @@ __attribute__ ((noinline)) static RETURN_TYPE call_with_stack(\
 	MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types)  \
 	void* dest_func, char* stack_base){\
 	typedef args_list<MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types_end)> arg_types; \
+	INIT_INSTRUCTION(RETURN_TYPE) \
 	__asm__ ("mov 	%0, %%esp;		\n\t" 	\
 				::"X"(stack_base));			\
 	func_back1(push_stack_define)			\
 	__asm__ ("call 	*%0;			\n\t" 	\
 				::"X"(dest_func));			\
 	__asm__ ("mov 	%ebp, %esp;		\n\t");	\
-	RETURN_INSTRUCTION(RETURN_TYPE);		\
+	RETURN_INSTRUCTION(RETURN_TYPE)		\
 }
 
 template<typename R>
 struct call_with_stack_class{
 #define RETURN_TYPE R
+#define INIT_INSTRUCTION(r_type)
 //manually pop 	%ebp because we need manually ret!
 #define RETURN_INSTRUCTION(r_type) 	__asm__ ("pop 	%ebp;\n\t"); __asm__ ("ret;\n\t");DUMMY_RETURN(r_type);
 BATCH_FUNC(call_with_stack_define)
@@ -84,11 +86,17 @@ typedef assert_not_class_not_largesize<R, MAX_RETUREN_SIZE> assert_instance;
 #undef RETURN_TYPE
 #undef RETURN_INSTRUCTION
 };
+#undef call_with_stack_define
+#undef push_stack_define
 
-//GET_SP is to avoid uninitialized warning
-#define GET_SP(sp_value) __asm__ (	"mov 	%%esp,  %0;	\n\t" 	:"=X"(sp_value))
-#define DEF_SP(sp_value) register char *sp_value asm ("esp"); GET_SP(sp_value)
+#undef func_back
+#undef func_back1
+
+#define DEF_SP(sp_value) DECL_REG_VAR(char*, sp_value, esp)
+
 //Maybe your compiler does not support register variable? use DEF_SP_BAK instead!
+#define GET_SP(sp_value) __asm__ ("movq 	%%esp,  %0;	\n\t" : "=X"(sp_value))
 #define DEF_SP_BAK(sp_value) char *sp_value; GET_SP(sp_value)
+
 #endif
 #endif

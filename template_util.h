@@ -109,7 +109,6 @@ join_func(i, 10,  xyfunc)
 #define define_type_args_ex_end(i) ,MACRO_JOIN(tt,i) MACRO_JOIN(aa,i)
 
 
-
 #define define_args_ex_c_begin(i)
 #define define_args_ex_c(i)  ,MACRO_JOIN(aa,i)
 #define define_args_ex_c_end(i) ,MACRO_JOIN(aa,i)
@@ -118,6 +117,10 @@ join_func(i, 10,  xyfunc)
 #define define_typeargs_begin(i)
 #define define_typeargs(i)  , typename function_property<T>::MACRO_JOIN(type,i)  MACRO_JOIN(a,i)
 #define define_typeargs_end(i) , typename function_property<T>::MACRO_JOIN(type,i)  MACRO_JOIN(a,i)
+
+#define define_pure_typeargs_begin(i)
+#define define_pure_typeargs(i)  , MACRO_JOIN(t,i)  MACRO_JOIN(a,i)
+#define define_pure_typeargs_end(i) , MACRO_JOIN(t,i)  MACRO_JOIN(a,i)
 
 #define typedefine_types_begin(i)
 #define typedefine_types(i) typedef MACRO_JOIN(t,i) MACRO_JOIN(type,i);
@@ -228,10 +231,15 @@ struct united_type<C&&>: public united_type<C&>{
 template <typename C>
 struct change_ref_to_pointer_size{
 	const static int size = sizeof(C);
+	typedef C content_type ;
 };
 template <typename C>
-struct change_ref_to_pointer_size<C&>{
+struct change_ref_to_pointer_size<C&> : public change_ref_to_pointer_size<C>{
 	const static int size = sizeof(C*);
+};
+
+template <typename C>
+struct change_ref_to_pointer_size<const C> : public change_ref_to_pointer_size<C>{
 };
 
 #ifdef ENABLE_RIGHT_VALUE_REFERENCE
@@ -241,10 +249,10 @@ struct change_ref_to_pointer_size<C&&> : public change_ref_to_pointer_size<C&>{
 #endif //ENABLE_RIGHT_VALUE_REFERENCE
 
 
-struct threechar{
-	char c[3];
+struct two_char{
+	char _[2];
 	template<typename T>static char is_class_test(int T::*);
-	template<typename T>static threechar is_class_test(...);
+	template<typename T>static two_char is_class_test(...);
 };
 
 template<bool t>
@@ -259,7 +267,7 @@ struct static_asserter<true>{
 
 template <typename T>
 struct assert_not_class{
-	STATIC_ASSERTER(not_class, sizeof(threechar::is_class_test<T>(0)) != sizeof(char));
+	STATIC_ASSERTER(not_class, sizeof(two_char::is_class_test<T>(0)) != sizeof(char));
 };
 
 template <typename T, unsigned int max_type_size>
@@ -309,7 +317,12 @@ struct args_list<
 template<typename C>
 struct function_property;
 
-#define class_define(i) template<MACRO_JOIN(RECURSIVE_FUNC_,i)(define_typenames_begin, define_typenames, define_typenames) typename R> \
+template<typename C>
+struct member_function_wrapper;
+
+// we ignores the noexcept specifier in C++ 11, see "A prvalue of type “pointer to noexcept function” can be converted to a prvalue of type “pointer to function”. The result is a pointer to the function.".
+#define function_property_define(i) \
+template<MACRO_JOIN(RECURSIVE_FUNC_,i)(define_typenames_begin, define_typenames, define_typenames) typename R> \
 struct function_property<R (*)(MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types_end)) > \
 {\
 	typedef args_list<MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types_end)> arg_list_type;\
@@ -327,8 +340,33 @@ struct function_property<R (*)(MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin,
 {\
 	static const bool has_variable_arguments = true;\
 };
+BATCH_FUNC(function_property_define)
+#undef function_property_define
 
-BATCH_FUNC(class_define)
+#define member_function_wrapper_define(i) \
+template <MACRO_JOIN(RECURSIVE_FUNC_,i)(define_typenames_begin, define_typenames, define_typenames) typename R, typename C> \
+struct member_function_wrapper<R (C::*)(MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types_end)) >{ \
+	inline member_function_wrapper(C& class_obj_a, R (C::*member_funtion_ptr_a)(MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types_end))) \
+	: class_obj(class_obj_a), member_funtion_ptr(member_funtion_ptr_a){}\
+	C& class_obj; \
+	R (C::*member_funtion_ptr)(MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types_end)); \
+	static R exec(const member_function_wrapper& instance MACRO_JOIN(RECURSIVE_FUNC_,i)(define_pure_typeargs_begin, define_pure_typeargs, define_pure_typeargs_end)){ \
+		return (instance.class_obj.*instance.member_funtion_ptr)(MACRO_JOIN(RECURSIVE_FUNC_,i)(define_args_begin_org, define_args_org, define_args_end_org)); \
+	} \
+}; \
+template <MACRO_JOIN(RECURSIVE_FUNC_,i)(define_typenames_begin, define_typenames, define_typenames) typename R, typename C> \
+struct member_function_wrapper<R (C::*)(MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types_end)) const >{ \
+	inline member_function_wrapper(const C& class_obj_a, R (C::*member_funtion_ptr_a)(MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types_end)) const) \
+	: class_obj(class_obj_a), member_funtion_ptr(member_funtion_ptr_a){}\
+	const C& class_obj; \
+	R (C::*member_funtion_ptr)(MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types_end)) const; \
+	static R exec(const member_function_wrapper& instance MACRO_JOIN(RECURSIVE_FUNC_,i)(define_pure_typeargs_begin, define_pure_typeargs, define_pure_typeargs_end)){ \
+		return (instance.class_obj.*instance.member_funtion_ptr)(MACRO_JOIN(RECURSIVE_FUNC_,i)(define_args_begin_org, define_args_org, define_args_end_org)); \
+	} \
+}; 
+BATCH_FUNC(member_function_wrapper_define)
+#undef member_function_wrapper_define
+
 
 //let z = _ALIGNED_BY(x,y), then z % y == 0  && z >= x
 #define _ALIGNED_BY(x,y) (((x)+(y)-1)&~((y)-1))
@@ -381,4 +419,7 @@ struct return_type_adapter<C&&>{
 };
 #endif //ENABLE_RIGHT_VALUE_REFERENCE
 
+//The second mov is to avoid use without initialization warning.
+#define DECL_REG_VAR_IMPL(type, name, reg) register type name asm (MACRO_TOSTRING(reg)); __asm__ ("mov 	%%"MACRO_TOSTRING(reg)",  %0;	\n\t" : "=X"(name));
+#define DECL_REG_VAR(type, name, reg) DECL_REG_VAR_IMPL(type, name, reg)
 #endif
