@@ -222,7 +222,7 @@ int main(){
 	cout << call_in_stack(buf, t3, 1,2,3,4,5,6,++z, z, &z, z ) << endl;
 	//cout << function_property<typeof(&printf)>::arguments_count << endl;
 	printf( "%d%d%p%f%d\n", 1, z, &z, (double)z, z+1);
-	cout << args_list<char const*, int, int, int*, double, int>::stackword_cost << endl;
+	cout << call_in_stack_impl::args_list<char const*, int, int, int*, double, int>::stackword_cost << endl;
 	call_in_stack(buf, &printf, "%d%d%p%f%d\n", 1, z, &z, (double)z, z+1);
 	call_in_stack(buf, &printf, "%d%d%p%f%d%s\n", 1, 2, buf, 3.0, 5, "Hello world!");
 	call_in_stack(buf, &printf, "%d%d%p%Lf%d%s\n", 1, 2, buf, 3.0L, 5, "Hello world!");
