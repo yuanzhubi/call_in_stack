@@ -2,8 +2,19 @@ Welcome to call in stack, goto https://github.com/yuanzhubi/call_in_stack/wiki/W
 
 
 
-Version 1.0.2: use a "type union" method to reduce the count of leaf template function instance via reducing types, including:
+Version 1.0.2: Now we support call_in_stack for member function.
 
-1.union all the pointer and reference type to word_int_t;
+std::string a("Hello world");
+call_in_stack(printf, "%s\n", call_in_stack(from_member_fun(a, c_str))) ;
 
-2.union unsigned and not unsigned integer type to not unsigned.
+And we support call_in_stack for functor or lambda in C++11!
+
+std::string a("Hello world");
+call_in_stack_safe(buf, from_functor(
+	[=](int arg){
+		printf("%s\n", a.c_str());
+		return arg;
+	}
+),2) ;
+
+That means you can write most of your codes of function in a new stack!
