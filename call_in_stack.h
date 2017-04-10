@@ -144,10 +144,10 @@ BI_TWO_BATCH_FUNC1(10, call_in_stack_safe_define)
 call_in_stack_safe_define(0,0)
 
 // adapter of member function
-#define from_member_fun(class_obj, member_name,...) &call_in_stack_impl::member_function_wrapper<__typeof__(&call_in_stack_impl::change_ref_to_pointer_size<__typeof__(class_obj)>::content_type::member_name)>::exec,##__VA_ARGS__ \
-,call_in_stack_impl::member_function_wrapper<__typeof__(&call_in_stack_impl::change_ref_to_pointer_size<__typeof__(class_obj)>::content_type::member_name)>(class_obj, &call_in_stack_impl::change_ref_to_pointer_size<__typeof__(class_obj)>::content_type::member_name)
+#define from_member_fun(class_obj, member_name) &call_in_stack_impl::member_function_wrapper<__typeof__(&call_in_stack_impl::change_ref_to_pointer_size<__typeof__(class_obj)>::content_type::member_name)>::exec, \
+call_in_stack_impl::member_function_wrapper<__typeof__(&call_in_stack_impl::change_ref_to_pointer_size<__typeof__(class_obj)>::content_type::member_name)>(class_obj, &call_in_stack_impl::change_ref_to_pointer_size<__typeof__(class_obj)>::content_type::member_name)
 
 // adapter of functor or lambda
-#define from_functor(class_obj,...) from_member_fun(class_obj, operator(),##__VA_ARGS__)
+#define from_functor(class_obj) from_member_fun(class_obj, operator())
 
 #endif

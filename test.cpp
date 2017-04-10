@@ -238,12 +238,12 @@ int main(){
     cout << call_in_stack(from_member_fun(test_string,c_str)) << endl;
     //sorry I can not support overloaded member function like following "at", because I can not give a convenient interface for you.
     //cout << call_in_stack(from_member_fun(test_string,at) , 5) << endl;
-    call_in_stack(from_member_fun(test_string, reserve , 8));
+    call_in_stack(from_member_fun(test_string, reserve) , 8);
     cout << call_in_stack(from_member_fun(test_string,data)) << endl;
 	functor_test.src = 1024;
-	cout << call_in_stack(from_functor(functor_test,"%s%d\n", "Hello boy,", 1024))<< endl;
+	cout << call_in_stack(from_functor(functor_test),"%s%d\n", "Hello boy,", 1024)<< endl;
 	functor_test.src = 4201;
-	cout << call_in_stack(from_functor(functor_test,"%s%d\n", "Hello boy,", 1024)) << endl;
+	cout << call_in_stack(from_functor(functor_test),"%s%d\n", "Hello boy,", 1024) << endl;
 	cout << "Ok !" << endl;
     cout << GCC_VERSION << endl;
 	return 0;
