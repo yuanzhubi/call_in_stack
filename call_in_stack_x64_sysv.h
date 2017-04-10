@@ -13,10 +13,10 @@
 
 #define STACK_ALIGNMENT_SIZE (16)
 
-typedef unsigned long long word_int_t;
-
 #include "template_util.h"
 namespace call_in_stack_impl{
+	typedef unsigned long long word_int_t;
+	
 	template <typename T>
 	struct type_test{
 		const static int floatreg_cost = 0;

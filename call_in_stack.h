@@ -4,19 +4,7 @@
 #include "call_in_stack_config.h"
 
 
-//after arguments passing and save ip pointer, the stack pointer should be at 16x + WORDSIZE bytes(then sp - wordsize must be 16x)
-//GET_ADDRESS_ALIENED is bad implemented because it does not know cost is const.
-#define GET_ADDRESS_ALIENED(prev_stack_base, cost)   ((prev_stack_base) - ((((word_int_t)(prev_stack_base)-(cost))&(0x10-1)) ^ WORDSIZE))
-template <int Cost>
-inline char* get_stack_base(char* prev_stack_base){
-	//We can help compiler to optimize when (((Cost + 2) * WORDSIZE) & (STACK_ALIGNMENT_SIZE-1) == 0).
-	//The judge is finished in compile time as it is a constant.
-	if((((Cost + 2) * WORDSIZE) & (STACK_ALIGNMENT_SIZE-1)) == 0){
-		return (char*)(((word_int_t)prev_stack_base) & (~(STACK_ALIGNMENT_SIZE - 1)));
-	}else{
-		return prev_stack_base - (((word_int_t)prev_stack_base & (STACK_ALIGNMENT_SIZE-1)) ^ (((Cost + 2)  * WORDSIZE) & (STACK_ALIGNMENT_SIZE-1)));
-	}
-}
+
 
 
 //1.We have arguments passing stack cost and previous sp pointer saving cost in stack before calling.
@@ -108,8 +96,8 @@ MACRO_JOIN(RECURSIVE_FUNC_,i)(define_typeargs_begin, define_typeargs, define_typ
 MACRO_JOIN(RECURSIVE_FUNC_,j)(define_type_args_ex_begin, define_type_args_ex, define_type_args_ex_end) \
 , typename call_in_stack_impl::static_asserter< i == call_in_stack_impl::function_property<T>::arguments_count >::type *p = 0 ){ \
 	using namespace call_in_stack_impl; \
-	DEF_SP(sp_value) \
-	if(((word_int_t)sp_value > (word_int_t)stack_buffer) && ((word_int_t)sp_value < (word_int_t)stack_buffer + stack_length)){ \
+	DEF_SP(sp_value)\
+	if(((call_in_stack_impl::word_int_t)sp_value > (call_in_stack_impl::word_int_t)stack_buffer) && ((call_in_stack_impl::word_int_t)sp_value < (call_in_stack_impl::word_int_t)stack_buffer + stack_length)){ \
 		return dest_func( \
 			MACRO_JOIN(RECURSIVE_FUNC_,i)(define_args_begin_org, define_args_org, define_args_end_org) \
 			MACRO_JOIN(RECURSIVE_FUNC_,j)(define_args_ex_c_begin, define_args_ex_c, define_args_ex_c_end) \
@@ -132,8 +120,8 @@ MACRO_JOIN(RECURSIVE_FUNC_,i)(define_typeargs_begin, define_typeargs, define_typ
 MACRO_JOIN(RECURSIVE_FUNC_,j)(define_type_args_ex_begin, define_type_args_ex, define_type_args_ex_end) \
 , typename call_in_stack_impl::static_asserter< i == call_in_stack_impl::function_property<T>::arguments_count >::type *p = 0 ){ \
 	using namespace call_in_stack_impl; \
-	DEF_SP(sp_value) \
-	if(((word_int_t)(((word_int_t)sp_value - (word_int_t)(&stack_buffer)) ^ ((word_int_t)(&(stack_buffer[N])) - (word_int_t)sp_value))) > 0ll){ \
+	DEF_SP(sp_value)\
+	if(((call_in_stack_impl::word_int_t)sp_value > (call_in_stack_impl::word_int_t)(&stack_buffer)) && ((call_in_stack_impl::word_int_t)sp_value < (call_in_stack_impl::word_int_t)(&(stack_buffer[N])))){ \
 		return dest_func( \
 			MACRO_JOIN(RECURSIVE_FUNC_,i)(define_args_begin_org, define_args_org, define_args_end_org) \
 			MACRO_JOIN(RECURSIVE_FUNC_,j)(define_args_ex_c_begin, define_args_ex_c, define_args_ex_c_end) \
