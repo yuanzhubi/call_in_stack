@@ -3,10 +3,6 @@
 
 #include "call_in_stack_config.h"
 
-
-
-
-
 //1.We have arguments passing stack cost and previous sp pointer saving cost in stack before calling.
 //  So we use get_stack_base<cost + 1>(stack_buffer + length) as stack_base.
 //2.Some versions of GCC has a bug that we can not use "call_in_stack_impl::static_asserter< i == call_in_stack_impl::function_property<T>::arguments_count > *p = 0" to break overload ambiguous(ambiguous error has higher priority than direct SFINAE?). So we use inner type of call_in_stack_impl::static_asserter instead.
