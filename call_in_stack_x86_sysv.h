@@ -13,10 +13,11 @@
 
 #define STACK_ALIGNMENT_SIZE (16)		//After GCC 4.5 or in Apple MAC, it is required for 16 bytes stack alignment.
 
-#include "template_util.h"
+
 
 namespace call_in_stack_impl{
 	typedef unsigned int word_int_t;
+	#include "template_util.h"
 	
 	#define args_list_define(i) \
 	template<MACRO_JOIN(RECURSIVE_FUNC_,i)(define_typenames_begin, define_typenames, define_typenames_end)> \
