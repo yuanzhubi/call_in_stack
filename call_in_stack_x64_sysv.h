@@ -108,12 +108,13 @@ namespace call_in_stack_impl{
 	#define STACK_COST(T) (function_property<T>::stackword_cost + 1)
 
 	#define call_with_stack_define(i) \
-	template <MACRO_JOIN(RECURSIVE_FUNC_,i)(define_typenames_begin, define_typenames, define_typenames) bool has_variable_arguments > \
-	FORCE_NOINLINE DLL_LOCAL static RETURN_TYPE call_with_stack(\
+	template <MACRO_JOIN(RECURSIVE_FUNC_,i)(define_typenames_begin, define_typenames, define_typenames)typename R, bool has_variable_arguments > \
+	FORCE_NOINLINE DLL_LOCAL R do_call (\
 		MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types)  \
 		void* dest_func, char* stack_base ){\
 		typedef args_list<MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types_end)> arg_types; \
-		INIT_INSTRUCTION(RETURN_TYPE) \
+		typedef assert_not_class_not_largesize<R, MAX_RETUREN_SIZE> assert_instance; \
+		INIT_INSTRUCTION(R) \
 		if(arg_types::intreg_cost >= 6){\
 			__asm__ (	"movq 	%0,  	%%r11;		\n\t" 	\
 						::"X"(dest_func)		\
@@ -148,7 +149,7 @@ namespace call_in_stack_impl{
 		}													\
 	\
 		func_back(restore_stack_define)						\
-		RETURN_INSTRUCTION(RETURN_TYPE)					\
+		RETURN_INSTRUCTION(R)					\
 	}
 
 	#pragma GCC push_options
@@ -156,18 +157,14 @@ namespace call_in_stack_impl{
 	//More than O2 or Os is also enabled. You can set O3 or Os.
 	//We use this because we cannot use "naked" attribute in x86 and x64, we will use forced O2 optimization (function O2 attribute maybe ignored by some compilers) instead.
 
-
-	template<typename R>
-	struct call_with_stack_class{
-	#define RETURN_TYPE R
 	#define INIT_INSTRUCTION(r_type)
 	#define RETURN_INSTRUCTION(r_type) 	  	__asm__ ("ret;\n\t");DUMMY_RETURN(r_type);
+	
 	BATCH_FUNC(call_with_stack_define)
-	typedef assert_not_class_not_largesize<R, MAX_RETUREN_SIZE> assert_instance;
-	#undef RETURN_TYPE
+	
 	#undef INIT_INSTRUCTION
 	#undef RETURN_INSTRUCTION
-	};
+
 	#undef call_with_stack_define
 	#undef push_stack_define
 	#undef restore_stack_define

@@ -14,7 +14,7 @@
 
 
 #if GCC_VERSION >= 40000
-#define DLL_LOCAL   __attribute__ ((visibility ("hidden")))
+#define DLL_LOCAL   __attribute__((visibility("internal")))
 #else
 #define DLL_LOCAL
 #endif

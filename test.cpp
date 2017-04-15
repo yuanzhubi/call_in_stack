@@ -184,6 +184,8 @@ struct class_test{
 	}
 }functor_test;
 int main(){
+	cout << "You should see \"TEST PASSED\" in the end if your compiling environment test passed! "  << endl;
+
 	/* cout <<change_ref_to_pointer_size<doublewordtype>::size<< _COUNT_OF_SIZE(change_ref_to_pointer_size<doublewordtype>::size, WORDSIZE)<<endl;
 	cout << _ALIGNED_COST(_COUNT_OF_SIZE(change_ref_to_pointer_size<doublewordtype>::size, WORDSIZE), 2)<<endl;
 	args_list <int , float , doublewordtype  , long , volatile int , const double ,int &, const int& ,int* , const int& >::out_stackword_cost(cout);
@@ -249,6 +251,7 @@ int main(){
 	functor_test.src = 4201;
 	cout << call_in_stack(from_functor(functor_test,"%s%d\n", "Hello boy,", 1024)) << endl;
 	cout << "Ok !" << endl;
-    cout << GCC_VERSION << endl;
+    cout << "GCC_VERSION:" << GCC_VERSION << endl;
+	cout << "\"TEST PASSED\""  << endl;
 	return 0;
 }
