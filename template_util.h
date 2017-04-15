@@ -1,6 +1,27 @@
 #ifndef _TEMPLATE_UTIL_H_
 #define _TEMPLATE_UTIL_H_
 
+#define GCC_VERSION (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)
+
+							   
+#if defined __GNUC__ 
+
+#if GCC_VERSION >= 40500
+#define DUMMY_RETURN(r_type)  __builtin_unreachable();
+#else
+#define DUMMY_RETURN(r_type) return r_type(0);
+#endif
+
+
+#if GCC_VERSION >= 40000
+#define DLL_LOCAL   __attribute__ ((visibility ("hidden")))
+#else
+#define DLL_LOCAL
+#endif
+
+#define FORCE_NOINLINE __attribute__ ((noinline))
+
+#endif //__GNUC__
 
 #define MACRO_TOSTRING_0(x) #x
 #define MACRO_TOSTRING(x) MACRO_TOSTRING_0(x)
@@ -138,7 +159,7 @@ join_func(i, 10,  xyfunc)
 template <typename C>
 struct united_type{
 	typedef C type;
-	inline static type forward(C arg){
+	DLL_LOCAL inline static type forward(C arg){
 		return arg;
 	}
 };
@@ -146,14 +167,14 @@ struct united_type{
 template <typename C>
 struct united_type<C*>{
 	typedef word_int_t type;
-	inline static type forward(const C* arg){
+	DLL_LOCAL inline static type forward(const C* arg){
 		return (type)arg;
 	}
 };
 template <typename C>
 struct united_type<C&>{
 	typedef word_int_t type;
-	inline static type forward(const C& arg){
+	DLL_LOCAL inline static type forward(const C& arg){
 		return (type)(&arg);
 	}
 };
@@ -161,7 +182,7 @@ struct united_type<C&>{
 template <typename C>
 struct united_type<volatile C&>{
 	typedef word_int_t type;
-	inline static type forward(volatile C& arg){
+	DLL_LOCAL inline static type forward(volatile C& arg){
 		return (type)(&arg);
 	}
 };
@@ -169,35 +190,35 @@ struct united_type<volatile C&>{
 template <>
 struct united_type<unsigned char>{
 	typedef char type;
-	inline static type forward(unsigned char arg){
+	DLL_LOCAL inline static type forward(unsigned char arg){
 		return (type)arg;
 	}
 };
 template <>
 struct united_type<unsigned short>{
 	typedef short type;
-	inline static type forward(unsigned short arg){
+	DLL_LOCAL inline static type forward(unsigned short arg){
 		return (type)arg;
 	}
 };
 template <>
 struct united_type<unsigned int>{
 	typedef int type;
-	inline static type forward(unsigned int arg){
+	DLL_LOCAL inline static type forward(unsigned int arg){
 		return (type)arg;
 	}
 };
 template <>
 struct united_type<unsigned long>{
 	typedef long type;
-	inline static type forward(unsigned long arg){
+	DLL_LOCAL inline static type forward(unsigned long arg){
 		return (type)arg;
 	}
 };
 template <>
 struct united_type<unsigned long long>{
 	typedef long long type;
-	inline static type forward(unsigned long long arg){
+	DLL_LOCAL inline static type forward(unsigned long long arg){
 		return (type)arg;
 	}
 };
@@ -305,6 +326,7 @@ struct args_list<
 
 	const static int float_count = 0;
 
+	const static bool use_stack_ahead = false;
 	//it reports in arguments stack style: the last bit(stack_padding_reporter%2) will be one if the last word in stack cost is not wasted for padding.
 	const static int stack_padding_reporter = 0;
 
@@ -347,7 +369,7 @@ BATCH_FUNC(function_property_define)
 #define member_function_wrapper_define(i) \
 template <MACRO_JOIN(RECURSIVE_FUNC_,i)(define_typenames_begin, define_typenames, define_typenames) typename R, typename C> \
 struct member_function_wrapper<R (C::*)(MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types_end)) >{ \
-	inline member_function_wrapper(C& class_obj_a, R (C::*member_funtion_ptr_a)(MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types_end))) \
+	DLL_LOCAL inline member_function_wrapper(C& class_obj_a, R (C::*member_funtion_ptr_a)(MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types_end))) \
 	: class_obj(class_obj_a), member_funtion_ptr(member_funtion_ptr_a){}\
 	C& class_obj; \
 	R (C::*member_funtion_ptr)(MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types_end)); \
@@ -357,7 +379,7 @@ struct member_function_wrapper<R (C::*)(MACRO_JOIN(RECURSIVE_FUNC_,i)(define_typ
 }; \
 template <MACRO_JOIN(RECURSIVE_FUNC_,i)(define_typenames_begin, define_typenames, define_typenames) typename R, typename C> \
 struct member_function_wrapper<R (C::*)(MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types_end)) const >{ \
-	inline member_function_wrapper(const C& class_obj_a, R (C::*member_funtion_ptr_a)(MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types_end)) const) \
+	DLL_LOCAL inline member_function_wrapper(const C& class_obj_a, R (C::*member_funtion_ptr_a)(MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types_end)) const) \
 	: class_obj(class_obj_a), member_funtion_ptr(member_funtion_ptr_a){}\
 	const C& class_obj; \
 	R (C::*member_funtion_ptr)(MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types_end)) const; \
@@ -382,7 +404,7 @@ BATCH_FUNC(member_function_wrapper_define)
 //GET_ADDRESS_ALIENED is bad implemented because it does not know cost is const.
 #define GET_ADDRESS_ALIENED(prev_stack_base, cost)   ((prev_stack_base) - ((((call_in_stack_impl::word_int_t)(prev_stack_base)-(cost))&(0x10-1)) ^ WORDSIZE))
 template <int Cost>
-inline char* get_stack_base(char* prev_stack_base){
+DLL_LOCAL inline char* get_stack_base(char* prev_stack_base){
 	//We can help compiler to optimize when (((Cost + 2) * WORDSIZE) & (STACK_ALIGNMENT_SIZE-1) == 0).
 	//The judge is finished in compile time as it is a constant.
 	if((((Cost + 2) * WORDSIZE) & (STACK_ALIGNMENT_SIZE-1)) == 0){
@@ -392,19 +414,12 @@ inline char* get_stack_base(char* prev_stack_base){
 	}
 }
 
-#define GCC_VERSION (__GNUC__ * 10000 \
-						+ __GNUC_MINOR__ * 100 \
-							   + __GNUC_PATCHLEVEL__)
-#if GCC_VERSION >= 40500
-#define DUMMY_RETURN(r_type)  __builtin_unreachable();
-#else
-#define DUMMY_RETURN(r_type) return r_type(0);
-#endif
+
 
 template <typename C>
 struct return_type_adapter{
 	typedef C forward_type;
-	inline static C forward(forward_type arg){
+	DLL_LOCAL inline static C forward(forward_type arg){
 		return arg;
 	}
 };
@@ -412,14 +427,14 @@ struct return_type_adapter{
 template < >
 struct return_type_adapter<void>{
 	typedef int forward_type;
-	inline static void forward(forward_type){
+	DLL_LOCAL inline static void forward(forward_type){
 	}
 };
 
 template <typename C>
 struct return_type_adapter<C&>{
 	typedef C* forward_type;
-	inline static C& forward(forward_type arg){
+	DLL_LOCAL inline static C& forward(forward_type arg){
 		return *arg;
 	}
 };
@@ -428,7 +443,7 @@ struct return_type_adapter<C&>{
 template <typename C>
 struct return_type_adapter<C&&>{
 	typedef C* forward_type;
-	inline static C&& forward(forward_type arg){
+	DLL_LOCAL inline static C&& forward(forward_type arg){
 		return (C&&)(*arg);
 	}
 };

@@ -69,6 +69,7 @@ namespace call_in_stack_impl{
 		? 0:_COUNT_OF_SIZE(change_ref_to_pointer_size<new_type>::size, WORDSIZE);\
 		const static int stackword_cost = parent::stackword_cost + ((addtional_stack_cost == 0)? 0 : (_ALIGNED_COST(parent::stackword_cost, addtional_stack_cost)));\
 		STATIC_ASSERTER(cost_too_much_stack, stackword_cost < WORDBITSIZE);\
+		const static bool use_stack_ahead = parent::use_stack_ahead || (intreg_cost < parent::max_int_reg_cost_x64_system_v && addtional_stack_cost != 0); \
 		const static int stack_padding_reporter = (parent::stack_padding_reporter << (stackword_cost-parent::stackword_cost)) + (1<<addtional_stack_cost) - 1;\
 		\
 		typedef assert_not_class_not_largesize<new_type, MAX_ARGUMENT_SIZE> assert_instance;\
@@ -108,7 +109,7 @@ namespace call_in_stack_impl{
 
 	#define call_with_stack_define(i) \
 	template <MACRO_JOIN(RECURSIVE_FUNC_,i)(define_typenames_begin, define_typenames, define_typenames) bool has_variable_arguments > \
-	__attribute__ ((noinline)) static RETURN_TYPE call_with_stack(\
+	FORCE_NOINLINE DLL_LOCAL static RETURN_TYPE call_with_stack(\
 		MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types)  \
 		void* dest_func, char* stack_base ){\
 		typedef args_list<MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types_end)> arg_types; \

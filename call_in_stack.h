@@ -10,7 +10,7 @@
 
 #define call_in_stack_define(i, j) \
 template <MACRO_JOIN(RECURSIVE_FUNC_, j)(define_typenames_ex_begin, define_typenames_ex, define_typenames_ex) typename T > \
-inline typename call_in_stack_impl::function_property<T>::return_type call_in_stack(T dest_func  \
+DLL_LOCAL inline typename call_in_stack_impl::function_property<T>::return_type call_in_stack(T dest_func  \
 MACRO_JOIN(RECURSIVE_FUNC_,i)(define_typeargs_begin, define_typeargs, define_typeargs) \
 MACRO_JOIN(RECURSIVE_FUNC_,j)(define_type_args_ex_begin, define_type_args_ex, define_type_args_ex_end) \
 , typename call_in_stack_impl::static_asserter< i == call_in_stack_impl::function_property<T>::arguments_count >::type *p = 0 ){ \
@@ -31,7 +31,7 @@ MACRO_JOIN(RECURSIVE_FUNC_,j)(define_type_args_ex_begin, define_type_args_ex, de
 		(void*)dest_func, get_stack_base< STACK_COST(T) >(z.stack_buffer + default_stack_length) )); \
 } \
 template <MACRO_JOIN(RECURSIVE_FUNC_, j)(define_typenames_ex_begin, define_typenames_ex, define_typenames_ex) typename T > \
-inline typename call_in_stack_impl::function_property<T>::return_type call_in_stack(unsigned int stack_length, T dest_func  \
+DLL_LOCAL inline typename call_in_stack_impl::function_property<T>::return_type call_in_stack(unsigned int stack_length, T dest_func  \
 MACRO_JOIN(RECURSIVE_FUNC_,i)(define_typeargs_begin, define_typeargs, define_typeargs) \
 MACRO_JOIN(RECURSIVE_FUNC_,j)(define_type_args_ex_begin, define_type_args_ex, define_type_args_ex_end) \
 , typename call_in_stack_impl::static_asserter< i == call_in_stack_impl::function_property<T>::arguments_count >::type *p = 0 ){ \
@@ -51,7 +51,7 @@ MACRO_JOIN(RECURSIVE_FUNC_,j)(define_type_args_ex_begin, define_type_args_ex, de
 		(void*)dest_func, get_stack_base< STACK_COST(T) >(z.stack_buffer + stack_length) )); \
 } \
 template <MACRO_JOIN(RECURSIVE_FUNC_, j)(define_typenames_ex_begin, define_typenames_ex, define_typenames_ex) typename T > \
-inline typename call_in_stack_impl::function_property<T>::return_type call_in_stack(char* stack_buffer, unsigned int stack_length, T dest_func \
+DLL_LOCAL inline typename call_in_stack_impl::function_property<T>::return_type call_in_stack(char* stack_buffer, unsigned int stack_length, T dest_func \
 MACRO_JOIN(RECURSIVE_FUNC_,i)(define_typeargs_begin, define_typeargs, define_typeargs) \
 MACRO_JOIN(RECURSIVE_FUNC_,j)(define_type_args_ex_begin, define_type_args_ex, define_type_args_ex_end) \
 , typename call_in_stack_impl::static_asserter< i == call_in_stack_impl::function_property<T>::arguments_count >::type *p = 0 ){ \
@@ -66,7 +66,7 @@ MACRO_JOIN(RECURSIVE_FUNC_,j)(define_type_args_ex_begin, define_type_args_ex, de
 		(void*)dest_func, get_stack_base< STACK_COST(T) >(stack_buffer + stack_length) )); \
 } \
 template <MACRO_JOIN(RECURSIVE_FUNC_, j)(define_typenames_ex_begin, define_typenames_ex, define_typenames_ex) typename T, typename B, int N > \
-inline typename call_in_stack_impl::function_property<T>::return_type call_in_stack(B (&stack_buffer)[N], T dest_func  \
+DLL_LOCAL inline typename call_in_stack_impl::function_property<T>::return_type call_in_stack(B (&stack_buffer)[N], T dest_func  \
 MACRO_JOIN(RECURSIVE_FUNC_,i)(define_typeargs_begin, define_typeargs, define_typeargs) \
 MACRO_JOIN(RECURSIVE_FUNC_,j)(define_type_args_ex_begin, define_type_args_ex, define_type_args_ex_end) \
 , typename call_in_stack_impl::static_asserter< i == call_in_stack_impl::function_property<T>::arguments_count >::type *p = 0 ){ \
@@ -87,7 +87,7 @@ call_in_stack_define(0,0)
 //call_in_stack_safe is safe for recursively call_in_stack with same stack_buffer(maybe it is a global variable?) as stack.
 #define call_in_stack_safe_define(i, j) \
 template <MACRO_JOIN(RECURSIVE_FUNC_, j)(define_typenames_ex_begin, define_typenames_ex, define_typenames_ex) typename T > \
-inline typename call_in_stack_impl::function_property<T>::return_type call_in_stack_safe( char* stack_buffer, unsigned int stack_length, T dest_func \
+DLL_LOCAL inline typename call_in_stack_impl::function_property<T>::return_type call_in_stack_safe( char* stack_buffer, unsigned int stack_length, T dest_func \
 MACRO_JOIN(RECURSIVE_FUNC_,i)(define_typeargs_begin, define_typeargs, define_typeargs) \
 MACRO_JOIN(RECURSIVE_FUNC_,j)(define_type_args_ex_begin, define_type_args_ex, define_type_args_ex_end) \
 , typename call_in_stack_impl::static_asserter< i == call_in_stack_impl::function_property<T>::arguments_count >::type *p = 0 ){ \
@@ -111,7 +111,7 @@ MACRO_JOIN(RECURSIVE_FUNC_,j)(define_type_args_ex_begin, define_type_args_ex, de
 	} \
 } \
 template <MACRO_JOIN(RECURSIVE_FUNC_, j)(define_typenames_ex_begin, define_typenames_ex, define_typenames_ex) typename T, typename B, int N > \
-inline typename call_in_stack_impl::function_property<T>::return_type call_in_stack_safe(B (&stack_buffer)[N], T dest_func \
+DLL_LOCAL inline typename call_in_stack_impl::function_property<T>::return_type call_in_stack_safe(B (&stack_buffer)[N], T dest_func \
 MACRO_JOIN(RECURSIVE_FUNC_,i)(define_typeargs_begin, define_typeargs, define_typeargs) \
 MACRO_JOIN(RECURSIVE_FUNC_,j)(define_type_args_ex_begin, define_type_args_ex, define_type_args_ex_end) \
 , typename call_in_stack_impl::static_asserter< i == call_in_stack_impl::function_property<T>::arguments_count >::type *p = 0 ){ \

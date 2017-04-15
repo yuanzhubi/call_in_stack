@@ -63,7 +63,7 @@ namespace call_in_stack_impl{
 
 	#define call_with_stack_define(i) \
 	template <MACRO_JOIN(RECURSIVE_FUNC_,i)(define_typenames_begin, define_typenames, define_typenames) bool has_variable_arguments> \
-	__attribute__ ((noinline)) static RETURN_TYPE call_with_stack(\
+	FORCE_NOINLINE DLL_LOCAL static RETURN_TYPE call_with_stack(\
 		MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types)  \
 		void* dest_func, char* stack_base){\
 		typedef args_list<MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types_end)> arg_types; \
