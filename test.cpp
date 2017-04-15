@@ -81,10 +81,12 @@ double t8(int a, float b, double c, const float d, const volatile double e, cons
 }
 void t1(doublewordtype a, float b, double c, const float d, const volatile double e, const double f,int &g, const int& h,int* i, const int& j){
     doublewordtype xx = f;
-	cout << xx << a << b << c << d << endl;
+	cout <<"typical1 begin"  << endl;
+	cout <<  a << endl;
+	cout << b << c << d << xx << endl;
 	cout << e << endl;
 	cout<< f << g << h << *i << j << f << endl;
-	cout <<"typical1"  << endl;
+	cout <<"typical1 end"  << endl;
 	#ifdef __x86_64__
 	printf("%d%Lf\n",*i,a);
 	#else
@@ -192,12 +194,14 @@ int main(){
 	call_in_stack(buf, sizeof(buf) , bb );
 	call_in_stack(buf, bb );
 	call_in_stack( buf, &bb1, z );
-	call_in_stack(buf, bb2, z, 134 );
+	call_in_stack(buf, bb2, z, 134);
 	//call_with_stack_exp_class<void>::call_with_stack_exp(z, 134,  buf + sizeof(buf) - 8, bb2, bb1);
-	t1(10000000000,2,3,4,5,6,++z, z, &z, z);
-	call_in_stack( buf, sizeof(buf), t1, 10000000000,2,3,4,5,6,++z, z, &z, z);
+	t1(12345.6789,2,3,4,5,6,++z, z, &z, z);
+	call_in_stack( buf, sizeof(buf), t1, 12345.6789,2,3,4,5,6,++z, z, &z, z);
+	
+	//call_in_stack_impl::function_property<typeof(&t1)>::arg_list_type::out_stackword_cost(cout);
 	call_in_stack(buf ,t0, 1,2,3,4,5,6,++z, z, &z, z);
-	call_in_stack(buf ,t1 ,1,2,3,4,5,6,++z, z, &z, z);
+	call_in_stack(buf ,t1 ,9.87654321,2,3,4,5,6,++z, z, &z, z);
 	call_in_stack(buf ,t8 ,1,2,3,4,5,6,++z, z, &z, z);
 	call_in_stack(buf ,sizeof(buf), t2, 1,2,3,4,5,6,++z, z, &z, 5 )("This is a jock");
 	call_in_stack(buf ,t2, 1,2,3,4,5,6,++z, z, &z, 5);

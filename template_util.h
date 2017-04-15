@@ -449,7 +449,7 @@ struct return_type_adapter<C&&>{
 };
 #endif //ENABLE_RIGHT_VALUE_REFERENCE
 
-//The second mov is to avoid use without initialization warning.
+//The second mov is to fool the compiler for "reading local variable before initialization" warning. The assembler will delete the instruction  even O0 optimization.
 #define DECL_REG_VAR_IMPL(type, name, reg) register type name asm (MACRO_TOSTRING(reg)); __asm__ ("mov 	%%"MACRO_TOSTRING(reg)",  %0;	\n\t" : "=X"(name));
 #define DECL_REG_VAR(type, name, reg) DECL_REG_VAR_IMPL(type, name, reg)
 
