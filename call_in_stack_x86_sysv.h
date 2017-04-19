@@ -59,7 +59,7 @@ namespace call_in_stack_impl{
 	#define func_back(func) func_back1(func) func(0)
 
 	//We save arguments and previous sp in new stack
-	#define STACK_COST(T) (function_property<T>::stackword_cost + 1)
+	#define STACK_COST(T) (T::stackword_cost + 1)
 
 	#define call_with_stack_define(i) \
 	template <MACRO_JOIN(RECURSIVE_FUNC_,i)(define_typenames_begin, define_typenames, define_typenames)typename R, bool has_variable_arguments > \

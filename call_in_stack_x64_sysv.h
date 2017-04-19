@@ -63,7 +63,7 @@ namespace call_in_stack_impl{
 		\
 		const static int intreg_cost = parent::intreg_cost + ((parent::intreg_cost != parent::max_int_reg_cost_x64_system_v) && (type_test<new_type>::intreg_cost != 0) ? 1 : 0) ; \
 		const static int floatreg_cost = parent::floatreg_cost + ((parent::floatreg_cost != parent::max_float_reg_cost_x64_system_v) && (type_test<new_type>::floatreg_cost != 0) ? 1 : 0); \
-		const static int float_count = parent::float_count + type_test<new_type>::is_float ? 1 : 0;\
+		const static int float_count = parent::float_count + (type_test<new_type>::is_float ? 1 : 0);\
 	\
 		const static int addtional_stack_cost =  ((parent::intreg_cost != intreg_cost ) || (parent::floatreg_cost != floatreg_cost))\
 		? 0:_COUNT_OF_SIZE(change_ref_to_pointer_size<new_type>::size, WORDSIZE);\
@@ -105,7 +105,7 @@ namespace call_in_stack_impl{
 	#define func_back(func) func_back1(func) func(0)
 
 	//We save arguments and previous sp in new stack
-	#define STACK_COST(T) (function_property<T>::stackword_cost + 1)
+	#define STACK_COST(T) (T::stackword_cost + 1)
 
 	#define call_with_stack_define(i) \
 	template <MACRO_JOIN(RECURSIVE_FUNC_,i)(define_typenames_begin, define_typenames, define_typenames)typename R, bool has_variable_arguments > \
@@ -164,16 +164,15 @@ namespace call_in_stack_impl{
 	
 	#undef INIT_INSTRUCTION
 	#undef RETURN_INSTRUCTION
-
-	#undef call_with_stack_define
-	#undef push_stack_define
-	#undef restore_stack_define
-
-	#undef func_back
-	#undef func_back1
-
+	
 	#pragma GCC pop_options
-
+	
+	#undef call_with_stack_define
+	//#undef push_stack_define
+	//#undef restore_stack_define
+	//#undef func_back
+	//#undef func_back1
+	
 	#define DEF_SP(sp_value) DECL_REG_VAR(char*, sp_value, rsp)
 	//Maybe your compiler does not support register variable? use DEF_SP_BAK instead!
 	#define GET_SP(sp_value) __asm__ ("movq 	%%rsp,  %0;	\n\t" : "=X"(sp_value))

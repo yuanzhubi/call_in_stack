@@ -306,16 +306,16 @@ struct assert_not_class_not_largesize :
 //In fact we only support 10 arguments.
 template <
 	typename t1=void, typename t2=void, typename t3=void, typename t4=void, typename t5=void, typename t6=void, typename t7=void, typename t8=void, typename t9=void, typename t10=void,
-	typename t11=void/*, typename t12=void, typename t13=void, typename t14=void, typename t15=void, typename t16=void, typename t17=void, typename t18=void, typename t19=void, typename t20=void,
-	typename t21=void, typename t22=void, typename t23=void, typename t24=void, typename t25=void, typename t26=void, typename t27=void, typename t28=void, typename t29=void, typename t30=void*/>
+	typename t11=void, typename t12=void, typename t13=void, typename t14=void, typename t15=void, typename t16=void, typename t17=void, typename t18=void, typename t19=void, typename t20=void,
+	typename t21=void, typename t22=void/*, typename t23=void, typename t24=void, typename t25=void, typename t26=void, typename t27=void, typename t28=void, typename t29=void, typename t30=void*/>
 struct args_list;
 
 
 template <>
 struct args_list<
 	void, void, void, void, void, void, void, void, void, void,
-	void/*, void, void, void, void, void, void, void, void, void,
-	void, void, void, void, void, void, void, void, void, void*/>
+	void, void, void, void, void, void, void, void, void, void,
+	void, void/*, void, void, void, void, void, void, void, void*/>
 {
 	const static int max_int_reg_cost_x64_system_v = 6;
 	const static int max_float_reg_cost_x64_system_v = 8;
@@ -449,7 +449,7 @@ struct return_type_adapter<C&&>{
 };
 #endif //ENABLE_RIGHT_VALUE_REFERENCE
 
-//The second mov is to fool the compiler for "reading local variable before initialization" warning. The assembler will delete the instruction  even O0 optimization.
+//The second mov is to fool the compiler for "reading local variable before initialization" warning. 
 #define DECL_REG_VAR_IMPL(type, name, reg) register type name asm (MACRO_TOSTRING(reg)); __asm__ ("mov 	%%"MACRO_TOSTRING(reg)",  %0;	\n\t" : "=X"(name));
 #define DECL_REG_VAR(type, name, reg) DECL_REG_VAR_IMPL(type, name, reg)
 

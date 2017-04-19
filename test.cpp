@@ -183,7 +183,15 @@ struct class_test{
 		return 8866;
 	}
 }functor_test;
+
+FORCE_NOINLINE void float_output(double testnum){
+	//double x = testnum1;
+	printf("%f%f%f%f%f%f%f%f%f%f\n"
+	,testnum,testnum,testnum,testnum,testnum,testnum,testnum,testnum,testnum,testnum);
+}
+
 int main(){
+	float_output(1.2);
 	cout << "You should see \"TEST PASSED\" in the end if your compiling environment test passed! "  << endl;
 
 	/* cout <<change_ref_to_pointer_size<doublewordtype>::size<< _COUNT_OF_SIZE(change_ref_to_pointer_size<doublewordtype>::size, WORDSIZE)<<endl;
