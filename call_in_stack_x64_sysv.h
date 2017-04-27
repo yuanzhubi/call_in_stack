@@ -17,7 +17,7 @@
 namespace call_in_stack_impl{
 	typedef unsigned long long word_int_t;
 	#include "template_util.h"
-	
+
 	template <typename T>
 	struct type_test{
 		const static int floatreg_cost = 0;
@@ -114,7 +114,6 @@ namespace call_in_stack_impl{
 		void* dest_func, char* stack_base ){\
 		typedef args_list<MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types_end)> arg_types; \
 		typedef assert_not_class_not_largesize<R, MAX_RETUREN_SIZE> assert_instance; \
-		INIT_INSTRUCTION(R) \
 		if(arg_types::intreg_cost >= 6){\
 			__asm__ (	"movq 	%0,  	%%r11;		\n\t" 	\
 						::"X"(dest_func)		\
@@ -149,7 +148,8 @@ namespace call_in_stack_impl{
 		}													\
 	\
 		func_back(restore_stack_define)						\
-		RETURN_INSTRUCTION(R)					\
+		__asm__ ("retq;\n\t");                   \
+		DUMMY_RETURN(R)					\
 	}
 
 	#pragma GCC push_options
@@ -157,22 +157,16 @@ namespace call_in_stack_impl{
 	//More than O2 or Os is also enabled. You can set O3 or Os.
 	//We use this because we cannot use "naked" attribute in x86 and x64, we will use forced O2 optimization (function O2 attribute maybe ignored by some compilers) instead.
 
-	#define INIT_INSTRUCTION(r_type)
-	#define RETURN_INSTRUCTION(r_type) 	  	__asm__ ("ret;\n\t");DUMMY_RETURN(r_type);
-	
 	BATCH_FUNC(call_with_stack_define)
-	
-	#undef INIT_INSTRUCTION
-	#undef RETURN_INSTRUCTION
-	
+
 	#pragma GCC pop_options
-	
+
 	#undef call_with_stack_define
 	//#undef push_stack_define
 	//#undef restore_stack_define
 	//#undef func_back
 	//#undef func_back1
-	
+
 	#define DEF_SP(sp_value) DECL_REG_VAR(char*, sp_value, rsp)
 	//Maybe your compiler does not support register variable? use DEF_SP_BAK instead!
 	#define GET_SP(sp_value) __asm__ ("movq 	%%rsp,  %0;	\n\t" : "=X"(sp_value))

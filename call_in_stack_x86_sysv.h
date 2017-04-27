@@ -18,7 +18,7 @@
 namespace call_in_stack_impl{
 	typedef unsigned int word_int_t;
 	#include "template_util.h"
-	
+
 	#define args_list_define(i) \
 	template<MACRO_JOIN(RECURSIVE_FUNC_,i)(define_typenames_begin, define_typenames, define_typenames_end)> \
 	struct args_list< MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types_end)> \
@@ -68,28 +68,22 @@ namespace call_in_stack_impl{
 		void* dest_func, char* stack_base){\
 		typedef args_list<MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types_end)> arg_types; \
 		typedef assert_not_class_not_largesize<R, MAX_RETUREN_SIZE> assert_instance; \
-		INIT_INSTRUCTION(R) \
 		__asm__ ("mov 	%0, %%esp;		\n\t" 	\
 					::"X"(stack_base));			\
 		func_back1(push_stack_define)			\
 		__asm__ ("call 	*%0;			\n\t" 	\
 					::"X"(dest_func));			\
-		__asm__ ("mov 	%ebp, %esp;		\n\t");	\
-		RETURN_INSTRUCTION(R)		\
+        __asm__ ("mov 	%ebp, %esp;		\n\t");	 __asm__ ("pop 	%ebp;\n\t"); __asm__ ("ret;\n\t");\
+        DUMMY_RETURN(R);\
 	}
 
-	#define INIT_INSTRUCTION(r_type)
-	//manually pop 	%ebp because we need manually ret!
-	#define RETURN_INSTRUCTION(r_type) 	__asm__ ("pop 	%ebp;\n\t"); __asm__ ("ret;\n\t");DUMMY_RETURN(r_type);
 	BATCH_FUNC(call_with_stack_define)
-	
-	#undef RETURN_INSTRUCTION
 
 	#undef call_with_stack_define
-	#undef push_stack_define
+	//#undef push_stack_define
 
-	#undef func_back
-	#undef func_back1
+	//#undef func_back
+	//#undef func_back1
 
 	#define DEF_SP(sp_value) DECL_REG_VAR(char*, sp_value, esp)
 

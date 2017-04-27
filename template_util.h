@@ -402,19 +402,27 @@ BATCH_FUNC(member_function_wrapper_define)
 
 //after arguments passing and save ip pointer, the stack pointer should be at 16x + WORDSIZE bytes(then sp - wordsize must be 16x)
 //GET_ADDRESS_ALIENED is bad implemented because it does not know cost is const.
-#define GET_ADDRESS_ALIENED(prev_stack_base, cost)   ((prev_stack_base) - ((((call_in_stack_impl::word_int_t)(prev_stack_base)-(cost))&(0x10-1)) ^ WORDSIZE))
+// #define GET_ADDRESS_ALIENED(prev_stack_base, cost)   ((prev_stack_base) - ((((call_in_stack_impl::word_int_t)(prev_stack_base)-(cost))&(0x10-1)) ^ WORDSIZE))
+// template <int Cost>
+// DLL_LOCAL inline char* get_stack_base(char* prev_stack_base){
+	////We can help compiler to optimize when (((Cost + 2) * WORDSIZE) & (STACK_ALIGNMENT_SIZE-1) == 0).
+	////The judge is finished in compile time as it is a constant.
+	// if((((Cost + 2) * WORDSIZE) & (STACK_ALIGNMENT_SIZE-1)) == 0){
+		// return (char*)(((call_in_stack_impl::word_int_t)prev_stack_base) & (~(STACK_ALIGNMENT_SIZE - 1)));
+	// }else{
+		// return prev_stack_base - (((call_in_stack_impl::word_int_t)prev_stack_base & (STACK_ALIGNMENT_SIZE-1)) ^ (((Cost + 2)  * WORDSIZE) & (STACK_ALIGNMENT_SIZE-1)));
+	// }
+// }
+
+//after arguments passing, the stack pointer should be at 16x bytes
 template <int Cost>
 DLL_LOCAL inline char* get_stack_base(char* prev_stack_base){
-	//We can help compiler to optimize when (((Cost + 2) * WORDSIZE) & (STACK_ALIGNMENT_SIZE-1) == 0).
-	//The judge is finished in compile time as it is a constant.
-	if((((Cost + 2) * WORDSIZE) & (STACK_ALIGNMENT_SIZE-1)) == 0){
+	if((((Cost) * WORDSIZE) & (STACK_ALIGNMENT_SIZE-1)) == 0){
 		return (char*)(((call_in_stack_impl::word_int_t)prev_stack_base) & (~(STACK_ALIGNMENT_SIZE - 1)));
 	}else{
-		return prev_stack_base - (((call_in_stack_impl::word_int_t)prev_stack_base & (STACK_ALIGNMENT_SIZE-1)) ^ (((Cost + 2)  * WORDSIZE) & (STACK_ALIGNMENT_SIZE-1)));
+		return prev_stack_base - (((call_in_stack_impl::word_int_t)prev_stack_base & (STACK_ALIGNMENT_SIZE-1)) ^ (((Cost)  * WORDSIZE) & (STACK_ALIGNMENT_SIZE-1)));
 	}
 }
-
-
 
 template <typename C>
 struct return_type_adapter{
