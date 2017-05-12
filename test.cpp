@@ -208,7 +208,7 @@ int main(){
 	//call_with_stack_exp_class<void>::call_with_stack_exp(z, 134,  buf + sizeof(buf) - 8, bb2, bb1);
 	t1(12345.6789,2,3,4,5,6,++z, z, &z, z);
 	call_in_stack( buf, sizeof(buf), t1, 12345.6789,2,3,4,5,6,++z, z, &z, z);
-	
+
 	//call_in_stack_impl::function_property<typeof(&t1)>::arg_list_type::out_stackword_cost(cout);
 	call_in_stack(buf ,t0, 1,2,3,4,5,6,++z, z, &z, z);
 	call_in_stack(buf ,t1 ,9.87654321,2,3,4,5,6,++z, z, &z, z);
@@ -261,5 +261,6 @@ int main(){
 	cout << "Ok !" << endl;
     cout << "GCC_VERSION:" << GCC_VERSION << endl;
 	cout << "\"TEST PASSED\""  << endl;
+
 	return 0;
 }

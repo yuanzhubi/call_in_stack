@@ -61,10 +61,10 @@ namespace call_in_stack_impl{
 		typedef args_list<MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types_end)> arg_types; \
 		typedef assert_not_class_not_largesize<R, MAX_RETUREN_SIZE> assert_instance; \
 		__asm__ ("mov 	%0, %%esp;		\n\t" 	\
-					::"X"(stack_base));			\
+					::"m"(stack_base));			\
 		func_back1(push_stack_define)			\
 		__asm__ ("call 	*%0;			\n\t" 	\
-					::"X"(dest_func));			\
+					::"m"(dest_func));			\
         __asm__ ("mov 	%ebp, %esp;		\n\t");	 __asm__ ("pop 	%ebp;\n\t"); __asm__ ("ret;\n\t");\
         DUMMY_RETURN(R);\
 	}

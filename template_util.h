@@ -3,8 +3,8 @@
 
 #define GCC_VERSION (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)
 
-							   
-#if defined __GNUC__ 
+
+#if defined __GNUC__
 
 #if GCC_VERSION >= 40500
 #define DUMMY_RETURN(r_type)  __builtin_unreachable();
@@ -457,8 +457,8 @@ struct return_type_adapter<C&&>{
 };
 #endif //ENABLE_RIGHT_VALUE_REFERENCE
 
-//The second mov is to fool the compiler for "reading local variable before initialization" warning. 
-#define DECL_REG_VAR_IMPL(type, name, reg) register type name asm (MACRO_TOSTRING(reg)); __asm__ ("mov 	%%"MACRO_TOSTRING(reg)",  %0;	\n\t" : "=X"(name));
+//The second mov is to fool the compiler for "reading local variable before initialization" warning.
+#define DECL_REG_VAR_IMPL(type, name, reg) register type name asm (MACRO_TOSTRING(reg)); __asm__ ("mov 	%%" MACRO_TOSTRING(reg) ",  %0;	\n\t" : "=X"(name));
 #define DECL_REG_VAR(type, name, reg) DECL_REG_VAR_IMPL(type, name, reg)
 
 

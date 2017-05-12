@@ -109,14 +109,13 @@ namespace call_in_stack_impl{
 
 	#define call_with_stack_define(i) \
 	template <MACRO_JOIN(RECURSIVE_FUNC_,i)(define_typenames_begin, define_typenames, define_typenames)typename R, bool has_variable_arguments > \
-	FORCE_NOINLINE DLL_LOCAL R do_call (\
+	 __attribute__((optimize("-O2"))) FORCE_NOINLINE DLL_LOCAL R do_call (\
 		MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types)  \
 		void* dest_func, char* stack_base ){\
 		typedef args_list<MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types_end)> arg_types; \
-		typedef assert_not_class_not_largesize<R, MAX_RETUREN_SIZE> assert_instance; \
 		if(arg_types::intreg_cost >= 6){\
 			__asm__ (	"movq 	%0,  	%%r11;		\n\t" 	\
-						::"X"(dest_func)		\
+						::"m"(dest_func)		\
 					);\
 		}\
 	\
@@ -143,7 +142,7 @@ namespace call_in_stack_impl{
 			__asm__ (	"callq 	*%r11;				\n\t");	\
 		}else{												\
 			__asm__ (	"callq	*%0					\n\t"	\
-					::"X"(dest_func)						\
+					::"r"(dest_func):"rax"						\
 			);												\
 		}													\
 	\
@@ -152,14 +151,14 @@ namespace call_in_stack_impl{
 		DUMMY_RETURN(R)					\
 	}
 
-	#pragma GCC push_options
-	#pragma GCC optimize ("O2")
+//	#pragma GCC push_options
+//	#pragma GCC optimize ("O2")
 	//More than O2 or Os is also enabled. You can set O3 or Os.
 	//We use this because we cannot use "naked" attribute in x86 and x64, we will use forced O2 optimization (function O2 attribute maybe ignored by some compilers) instead.
 
 	BATCH_FUNC(call_with_stack_define)
 
-	#pragma GCC pop_options
+//	#pragma GCC pop_options
 
 	#undef call_with_stack_define
 	//#undef push_stack_define
