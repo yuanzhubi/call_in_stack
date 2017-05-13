@@ -4,6 +4,15 @@ Goto https://github.com/yuanzhubi/call_in_stack/wiki/Welcome-to-call_in_stack fo
 
 Goto QQ Group :293767138(talk_in_stack) for further discussion.
 
+---------------------------------------------------------------------------------------------------------------
+
+Version 1.0.6: Important adaptive improvement for different version of GCC!
+
+In this version:
+
+We remove __builtin_unreachable in our library because GCC has different semantic in high version(since 4.5);
+
+We disable the -fipa-sra optimize for "do_call" function (with no performance lost because it is an assemble function indeed) in our library because it breaks the system V ABI and arguments forwarding rule.
 
 ---------------------------------------------------------------------------------------------------------------
 
