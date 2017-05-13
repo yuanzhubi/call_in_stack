@@ -6,11 +6,7 @@
 
 #if defined __GNUC__
 
-#if GCC_VERSION >= 40500
-#define DUMMY_RETURN(r_type)  __builtin_unreachable();
-#else
 #define DUMMY_RETURN(r_type) return r_type(0);
-#endif
 
 
 #if GCC_VERSION >= 40000
