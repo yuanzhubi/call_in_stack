@@ -152,9 +152,10 @@ namespace call_in_stack_impl{
 	}
 
 	#pragma GCC push_options
+	//disable -fipa-sra
 	#pragma GCC optimize ("O1")
+	//disable push rbp
 	#pragma GCC optimize ("omit-frame-pointer")
-	//More than O2 or Os is also enabled. You can set O3 or Os.
 	//We use this because we cannot use "naked" attribute in x86 and x64, we will use forced O2 optimization (function O2 attribute maybe ignored by some compilers) instead.
 
 	BATCH_FUNC(call_with_stack_define)
