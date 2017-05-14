@@ -6,7 +6,7 @@ Goto QQ Group :293767138(talk_in_stack) for further discussion.
 
 ---------------------------------------------------------------------------------------------------------------
 
-Version 1.0.6: Important adaptive improvement for different version of GCC!
+Version 1.0.5: Important adaptive improvement for different version of GCC!
 
 In this version:
 
