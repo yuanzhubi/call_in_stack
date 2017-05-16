@@ -50,12 +50,12 @@ namespace call_in_stack_impl{
 
 	#define func_back(func) func_back1(func) func(0)
 
-	//We save arguments and previous sp in new stack
-	#define STACK_COST(T) (T::stackword_cost + 1)
+	//We save arguments in new stack
+	#define STACK_COST(T) (T::stackword_cost)
 
 	#define call_with_stack_define(i) \
 	template <MACRO_JOIN(RECURSIVE_FUNC_,i)(define_typenames_begin, define_typenames, define_typenames) typename R, bool has_variable_arguments > \
-	__attribute__((optimize("-O0"))) FORCE_NOINLINE DLL_LOCAL R do_call (\
+	FORCE_OPTIMIZATION(O0) FORCE_NOINLINE DLL_LOCAL R do_call (\
 		MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types)  \
 		void* dest_func, char* stack_base){\
 		typedef args_list<MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types_end)> arg_types; \
@@ -68,14 +68,14 @@ namespace call_in_stack_impl{
         DUMMY_RETURN(R);\
 	}
 	#pragma GCC push_options
-	//disable -fipa-sra
+
 	//disable omit-frame-pointer to adaptive most compiler
 	#pragma GCC optimize ("O0")
-	
+
 	#pragma GCC optimize ("no-omit-frame-pointer")
 
 	BATCH_FUNC(call_with_stack_define)
-	
+
 	#pragma GCC pop_options
 
 	#undef call_with_stack_define
@@ -84,11 +84,11 @@ namespace call_in_stack_impl{
 	//#undef func_back
 	//#undef func_back1
 
-	#define DEF_SP(sp_value) DECL_REG_VAR(char*, sp_value, esp)
+	#define DEF_SP(sp_value) DECL_REG_VAR(word_int_t, sp_value, esp)
 
 	//Maybe your compiler does not support register variable? use DEF_SP_BAK instead!
 	#define GET_SP(sp_value) __asm__ ("movq 	%%esp,  %0;	\n\t" : "=X"(sp_value))
-	#define DEF_SP_BAK(sp_value) char *sp_value; GET_SP(sp_value)
+	#define DEF_SP_BAK(sp_value) word_int_t sp_value; GET_SP(sp_value)
 }
 #endif
 #endif

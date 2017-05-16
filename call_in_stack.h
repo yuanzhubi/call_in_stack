@@ -95,6 +95,9 @@ BI_TWO_BATCH_FUNC1(10, call_in_stack_define)
 call_in_stack_define(0,0)
 
 //call_in_stack_safe is safe for recursively call_in_stack with same stack_buffer(maybe it is a global variable?) as stack.
+#define IS_IN_CALL_STACK(dest, stack_begin, stack_end) \
+	(((word_int_t)(((word_int_t)(dest) - (word_int_t)(stack_begin)) ^ ((word_int_t)(stack_end) - (word_int_t)dest))) > 0)
+	
 #define call_in_stack_safe_define(i, j) \
 template <MACRO_JOIN(RECURSIVE_FUNC_, j)(define_typenames_ex_begin, define_typenames_ex, define_typenames_ex) typename T > \
 DLL_LOCAL inline typename call_in_stack_impl::function_property<T>::return_type call_in_stack_safe( char* stack_buffer, unsigned int stack_length, T dest_func \
@@ -102,8 +105,8 @@ MACRO_JOIN(RECURSIVE_FUNC_,i)(define_typeargs_begin, define_typeargs, define_typ
 MACRO_JOIN(RECURSIVE_FUNC_,j)(define_type_args_ex_begin, define_type_args_ex, define_type_args_ex_end) \
 , typename call_in_stack_impl::static_asserter< i == call_in_stack_impl::function_property<T>::arguments_count && (call_in_stack_impl::function_property<T>::has_variable_arguments || j == 0)>::type *p = 0){ \
 	using namespace call_in_stack_impl; \
-	word_int_t sp_value; sp_value = (word_int_t)&sp_value;\
-	if((sp_value > (call_in_stack_impl::word_int_t)stack_buffer) && ((word_int_t)sp_value < (word_int_t)stack_buffer + stack_length)){ \
+	DEF_SP(sp_value);\
+	if(IS_IN_CALL_STACK(sp_value, stack_buffer, stack_buffer + stack_length)){ \
 		return dest_func( \
 			MACRO_JOIN(RECURSIVE_FUNC_,i)(define_args_begin_org, define_args_org, define_args_end_org) \
 			MACRO_JOIN(RECURSIVE_FUNC_,j)(define_args_ex_c_begin, define_args_ex_c, define_args_ex_c_end) \
@@ -128,8 +131,8 @@ MACRO_JOIN(RECURSIVE_FUNC_,i)(define_typeargs_begin, define_typeargs, define_typ
 MACRO_JOIN(RECURSIVE_FUNC_,j)(define_type_args_ex_begin, define_type_args_ex, define_type_args_ex_end) \
 , typename call_in_stack_impl::static_asserter< i == call_in_stack_impl::function_property<T>::arguments_count && (call_in_stack_impl::function_property<T>::has_variable_arguments || j == 0)>::type *p = 0){ \
 	using namespace call_in_stack_impl; \
-	word_int_t sp_value; sp_value = (word_int_t)&sp_value;\
-	if((sp_value > (word_int_t)(&stack_buffer)) && ((word_int_t)sp_value < (word_int_t)(&(stack_buffer[N])))){ \
+	DEF_SP(sp_value);\
+	if(IS_IN_CALL_STACK(sp_value, &stack_buffer, &(stack_buffer[N]))){ \
 		return dest_func( \
 			MACRO_JOIN(RECURSIVE_FUNC_,i)(define_args_begin_org, define_args_org, define_args_end_org) \
 			MACRO_JOIN(RECURSIVE_FUNC_,j)(define_args_ex_c_begin, define_args_ex_c, define_args_ex_c_end) \

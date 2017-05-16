@@ -25,14 +25,6 @@ namespace call_in_stack_impl{
 		const static bool is_float = false;
 	};
 
-	template <typename T>
-	struct type_test<const T>:public type_test<T>{
-	};
-
-	template <typename T>
-	struct type_test<volatile T>:public type_test<T>{
-	};
-
 	template <>
 	struct type_test<float>{
 		const static int floatreg_cost = 1;
@@ -52,6 +44,14 @@ namespace call_in_stack_impl{
 		const static int floatreg_cost = 0;		//in x64, stack is used for transmitting the long double parameter
 		const static int intreg_cost = 0;
 		const static bool is_float = true;
+	};
+
+	template <typename T>
+	struct type_test<const T>:public type_test<T>{
+	};
+
+	template <typename T>
+	struct type_test<volatile T>:public type_test<T>{
 	};
 
 	#define args_list_define(i) \
@@ -87,16 +87,8 @@ namespace call_in_stack_impl{
 	BATCH_FUNC1(args_list_define)
 	#undef args_list_define
 
-	//((arg_types::stack_padding_reporter & (((word_int_t)1)<<((word_int_t)(arg_types::stackword_cost-j))%WORDBITSIZE)) != 0) means the space is for padding(and lea is cheaper than push)
-	// Here "%WORDBITSIZE" is to escape from shifting overflow warning...
 
-	#define push_stack_define(j) if(arg_types::stackword_cost >= j ){\
-		if((arg_types::stack_padding_reporter & (((word_int_t)1)<<((word_int_t)(arg_types::stackword_cost-j))%WORDBITSIZE)) != 0) \
-				__asm__ ("pushq " MACRO_TOSTRING(j*WORDSIZE) "(%r10);\n\t");\
-		else 	__asm__ ("leaq -" MACRO_TOSTRING(WORDSIZE) "(%rsp), %rsp;\n\t");}
 
-	#define restore_stack_define(j) if(arg_types::stackword_cost == j){\
-		__asm__ ("movq " MACRO_TOSTRING(j*WORDSIZE) "(%rsp), %rsp;\n\t");}
 
 	//MAX_ARGUMENT_SIZE = 2*WORDSIZE, 10*2=20,
 	//In x64, the "dest_func" argument may be stored at register so we do not know the parameters' address and we should copy arguments beginning from sp+stackword_cost
@@ -104,12 +96,25 @@ namespace call_in_stack_impl{
 
 	#define func_back(func) func_back1(func) func(0)
 
+
+#if !(defined ALWAYS_HAS_FRAME_POINTER)
+
 	//We save arguments and previous sp in new stack
 	#define STACK_COST(T) (T::stackword_cost + 1)
 
+    //((arg_types::stack_padding_reporter & (((word_int_t)1)<<((word_int_t)(arg_types::stackword_cost-j))%WORDBITSIZE)) != 0) means the space is for padding(and lea is cheaper than push)
+	// Here "%WORDBITSIZE" is to escape from shifting overflow warning...
+    #define push_stack_define(j) if(arg_types::stackword_cost >= j ){\
+		if((arg_types::stack_padding_reporter & (((word_int_t)1)<<((word_int_t)(arg_types::stackword_cost-j))%WORDBITSIZE)) != 0) \
+				__asm__ ("pushq " MACRO_TOSTRING(j*WORDSIZE) "(%r10);\n\t");\
+		else 	__asm__ ("leaq -" MACRO_TOSTRING(WORDSIZE) "(%rsp), %rsp;\n\t");}
+
+	#define restore_stack_define(j) if(arg_types::stackword_cost == j){\
+		__asm__ ("movq " MACRO_TOSTRING(j*WORDSIZE) "(%rsp), %rsp;\n\t");}
+
 	#define call_with_stack_define(i) \
 	template <MACRO_JOIN(RECURSIVE_FUNC_,i)(define_typenames_begin, define_typenames, define_typenames)typename R, bool has_variable_arguments > \
-	 __attribute__((optimize("-O1"))) FORCE_NOINLINE DLL_LOCAL R do_call (\
+    FORCE_OPTIMIZATION(O1) FORCE_NOINLINE DLL_LOCAL R do_call (\
 		MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types)  \
 		void* dest_func, char* stack_base ){\
 		typedef args_list<MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types_end)> arg_types; \
@@ -151,16 +156,65 @@ namespace call_in_stack_impl{
 		DUMMY_RETURN(R)					\
 	}
 
+#if defined ENABLE_PUSH_PRAGMA
 	#pragma GCC push_options
 	//disable -fipa-sra
 	#pragma GCC optimize ("O1")
 	//disable push rbp
 	#pragma GCC optimize ("omit-frame-pointer")
 	//We use this because we cannot use "naked" attribute in x86 and x64, we will use forced O2 optimization (function O2 attribute maybe ignored by some compilers) instead.
+#endif // ENABLE_PUSH_PRAGMA
+
+#else
+	//We save arguments and previous sp in new stack
+	#define STACK_COST(T) (T::stackword_cost )
+
+    //((arg_types::stack_padding_reporter & (((word_int_t)1)<<((word_int_t)(arg_types::stackword_cost-j))%WORDBITSIZE)) != 0) means the space is for padding(and lea is cheaper than push)
+	// Here "%WORDBITSIZE" is to escape from shifting overflow warning...
+    #define push_stack_define(j) if(arg_types::stackword_cost >= j ){\
+		if((arg_types::stack_padding_reporter & (((word_int_t)1)<<((word_int_t)(arg_types::stackword_cost-j))%WORDBITSIZE)) != 0) \
+				__asm__ ("pushq " MACRO_TOSTRING(j*WORDSIZE+WORDSIZE) "(%rbp);\n\t");\
+		else 	__asm__ ("leaq -" MACRO_TOSTRING(WORDSIZE) "(%rsp), %rsp;\n\t");}
+
+	#define restore_stack_define(j) if(arg_types::stackword_cost == j){\
+		__asm__ ("movq %rbp, %rsp;\n\t");  __asm__ ("pop %rbp;\n\t");}
+
+	#define call_with_stack_define(i) \
+	template <MACRO_JOIN(RECURSIVE_FUNC_,i)(define_typenames_begin, define_typenames, define_typenames)typename R, bool has_variable_arguments > \
+	 FORCE_NOINLINE DLL_LOCAL R do_call (\
+		MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types)  \
+		void* dest_func, char* stack_base ){\
+		typedef args_list<MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types_end)> arg_types; \
+		if(arg_types::float_count > 0 && has_variable_arguments){\
+			__asm__ (	"movq 	%0,  %%rax;			\n\t"	\
+					:: "X"(arg_types::float_count));	\
+		}\
+        __asm__ ("mov 	%0, %%rsp;		\n\t" 	\
+                ::"X"(stack_base));			\
+        func_back1(push_stack_define)			\
+		__asm__ ("call 	*%0;			\n\t" 	\
+					::"X"(dest_func));			\
+		func_back(restore_stack_define)			\
+		__asm__ ("retq;\n\t");                   \
+		DUMMY_RETURN(R)					\
+	}
+
+#if defined ENABLE_PUSH_PRAGMA
+	#pragma GCC push_options
+
+	#pragma GCC optimize ("O0")
+	//force push rbp
+	#pragma GCC optimize ("no-omit-frame-pointer")
+
+#endif // ENABLE_PUSH_PRAGMA
+
+#endif // ALWAYS_HAS_FRAME_POINTER
 
 	BATCH_FUNC(call_with_stack_define)
 
+#if defined ENABLE_PUSH_PRAGMA
 	#pragma GCC pop_options
+#endif // ENABLE_PUSH_PRAGMA
 
 	#undef call_with_stack_define
 	//#undef push_stack_define
@@ -168,11 +222,13 @@ namespace call_in_stack_impl{
 	//#undef func_back
 	//#undef func_back1
 
-	#define DEF_SP(sp_value) DECL_REG_VAR(char*, sp_value, rsp)
+	#define DEF_SP(sp_value) DECL_REG_VAR(word_int_t, sp_value, rsp)
 	//Maybe your compiler does not support register variable? use DEF_SP_BAK instead!
 	#define GET_SP(sp_value) __asm__ ("movq 	%%rsp,  %0;	\n\t" : "=X"(sp_value))
-	#define DEF_SP_BAK(sp_value) char *sp_value; GET_SP(sp_value)
+	#define DEF_SP_BAK(sp_value) word_int_t sp_value; GET_SP(sp_value)
 }
 
 #endif
+
+
 #endif
