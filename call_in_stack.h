@@ -5,10 +5,10 @@
 
 //1.We have arguments passing stack cost and previous sp pointer saving cost in stack before calling.
 //  So we use get_stack_base<cost + 1>(stack_buffer + length) as stack_base.
-//2.Some versions of GCC can not support "call_in_stack_impl::static_asserter< i == call_in_stack_impl::function_property<T>::arguments_count && (typename return_type_adapter<return_type>::forward_type, call_in_stack_impl::function_property<T>::has_variable_arguments || j == 0) > *p = 0" 
+//2.Some versions of GCC can not support "call_in_stack_impl::static_asserter< i == call_in_stack_impl::function_property<T>::arguments_count && (typename return_type_adapter<return_type>::forward_type, call_in_stack_impl::function_property<T>::has_variable_arguments || j == 0) > *p = 0"
 //  to break overload ambiguous(ambiguous error has higher priority than direct SFINAE?). So we use inner type of call_in_stack_impl::static_asserter instead.
-//3.The assert "i == call_in_stack_impl::function_property<T>::arguments_count && (typename return_type_adapter<return_type>::forward_type, call_in_stack_impl::function_property<T>::has_variable_arguments || j == 0)" 
-//  is to help the overload resolution between "i fixed arguments, j variable arguments" and "i+1 fixed arguments, j-1 variable arguments" 
+//3.The assert "i == call_in_stack_impl::function_property<T>::arguments_count && (typename return_type_adapter<return_type>::forward_type, call_in_stack_impl::function_property<T>::has_variable_arguments || j == 0)"
+//  is to help the overload resolution between "i fixed arguments, j variable arguments" and "i+1 fixed arguments, j-1 variable arguments"
 
 #define call_in_stack_define(i, j) \
 template <MACRO_JOIN(RECURSIVE_FUNC_, j)(define_typenames_ex_begin, define_typenames_ex, define_typenames_ex) typename T > \
@@ -97,7 +97,7 @@ call_in_stack_define(0,0)
 //call_in_stack_safe is safe for recursively call_in_stack with same stack_buffer(maybe it is a global variable?) as stack.
 #define IS_IN_CALL_STACK(dest, stack_begin, stack_end) \
 	(((word_int_t)(((word_int_t)(dest) - (word_int_t)(stack_begin)) ^ ((word_int_t)(stack_end) - (word_int_t)dest))) > 0)
-	
+
 #define call_in_stack_safe_define(i, j) \
 template <MACRO_JOIN(RECURSIVE_FUNC_, j)(define_typenames_ex_begin, define_typenames_ex, define_typenames_ex) typename T > \
 DLL_LOCAL inline typename call_in_stack_impl::function_property<T>::return_type call_in_stack_safe( char* stack_buffer, unsigned int stack_length, T dest_func \
@@ -156,11 +156,18 @@ BI_TWO_BATCH_FUNC1(10, call_in_stack_safe_define)
 //BI_TWO_BATCH_FUNC1 will render 10*11 times and we do not support pure variable argument lists without any fixed argument(comparing printf(...) and printf(char*,...); the previous function does not make sense)
 call_in_stack_safe_define(0,0)
 
+
+#define from_member_fun_impl(wrapper, class_obj, member_name,...) &wrapper<__typeof__(&call_in_stack_impl::change_ref_to_pointer_size<__typeof__(class_obj)>::content_type::member_name)>::exec, \
+wrapper<__typeof__(&call_in_stack_impl::change_ref_to_pointer_size<__typeof__(class_obj)>::content_type::member_name)>(class_obj, &call_in_stack_impl::change_ref_to_pointer_size<__typeof__(class_obj)>::content_type::member_name),##__VA_ARGS__
+
 // adapter of member function
-#define from_member_fun(class_obj, member_name,...) &call_in_stack_impl::member_function_wrapper<__typeof__(&call_in_stack_impl::change_ref_to_pointer_size<__typeof__(class_obj)>::content_type::member_name)>::exec, \
-call_in_stack_impl::member_function_wrapper<__typeof__(&call_in_stack_impl::change_ref_to_pointer_size<__typeof__(class_obj)>::content_type::member_name)>(class_obj, &call_in_stack_impl::change_ref_to_pointer_size<__typeof__(class_obj)>::content_type::member_name),##__VA_ARGS__
+#define from_member_fun(class_obj, member_name,...) from_member_fun_impl(call_in_stack_impl::member_function_wrapper, class_obj, member_name,##__VA_ARGS__)
+
+#define from_nonvirtual_member_fun(class_obj, member_name,...) from_member_fun_impl(call_in_stack_impl::nonvirtual_member_function_wrapper, class_obj, member_name,##__VA_ARGS__)
+
+#define from_virtual_member_fun(class_obj, member_name,...) from_member_fun_impl(call_in_stack_impl::virtual_member_function_wrapper, class_obj, member_name,##__VA_ARGS__)
 
 // adapter of functor or lambda
-#define from_functor(class_obj,...) from_member_fun(class_obj, operator(),##__VA_ARGS__)
+#define from_functor(class_obj,...) from_nonvirtual_member_fun(class_obj, operator(),##__VA_ARGS__)
 
 #endif

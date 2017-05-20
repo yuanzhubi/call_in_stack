@@ -34,10 +34,10 @@ void bb2(int &c, int d){
 
 #ifdef ENABLE_RIGHT_VALUE_REFERENCE
 #include <utility>
-int& b3(int &&c, const int &&d){
+int&& b3(int &&c, const int&& d){
     cout << c << d << endl;
     cout << "right_value_test" << endl;
-    return c;
+    return std::move(c);
 }
 
  struct global_struct1{
@@ -175,13 +175,108 @@ void ff(ag);
 #include "cmath"
 #include <string>
 #include <stdarg.h>
-struct class_test{
+
+struct class_test_v{
+    int p_src_v;
+    class_test_v():p_src_v(1234567890){}
+    virtual int vdummy(){
+        if(p_src_v == 1234567890){
+            cout << "functor_test: " << p_src_v  << endl;
+        }
+        else{
+            throw p_src_v;
+        }
+		return 4444;
+    }
+    int dummy(){
+        if(p_src_v == 1234567890){
+            cout << "functor_test: " << p_src_v  << endl;
+        }
+        else{
+            throw p_src_v;
+        }
+		return 4321;
+    }
+};
+
+struct class_test_a : public virtual class_test_v{
+    int p_src_a;
+    class_test_a():p_src_a(123456789){}
+    int printa(const char * format, const char* str, int d){
+        printf(format, str, d);
+        if(p_src_a == 123456789){
+            cout << "functor_test: " << p_src_a  << endl;
+        }
+        else{
+            throw p_src_a;
+        }
+		return 8844;
+    }
+
+    virtual int vdummya(){
+        if(p_src_a == 123456789){
+            cout << "functor_test: " << p_src_a  << endl;
+        }
+        else{
+            throw p_src_a;
+        }
+		return 8844;
+    }
+
+    virtual int vprinta(const char * format, const char* str, int d){
+        printf(format, str, d);
+        if(p_src_a == 123456789){
+            cout << "functor_test: " << p_src_a  << endl;
+        }
+        else{
+            throw p_src_a;
+        }
+		return 8844;
+    }
+};
+
+struct class_test_b: public virtual class_test_v{
+    int p_src_b;
+    class_test_b():p_src_b(987654321){}
+    int printb(const char * format, const char* str, int d){
+        printf(format, str, d);
+        if(p_src_b == 987654321){
+           cout << "functor_test: " << p_src_b  << endl;
+        }
+        else{
+            throw p_src_b;
+        }
+		return 4488;
+    }
+
+    virtual int vprintb(const char * format, const char* str, int d){
+        printf(format, str, d);
+        if(p_src_b == 987654321){
+           cout << "functor_test: " << p_src_b  << endl;
+        }
+        else{
+            throw p_src_b;
+        }
+		return 4488;
+    }
+};
+
+struct empty_test{
+    char test[13];
+};
+struct class_test: public empty_test, public class_test_b, public class_test_a{
 	int src;
 	int operator()(const char * format, const char* str, int d){
-		 printf(format, str, d);
+        printf(format, str, d);
 		cout << "functor_test: " << src  << endl;
 		return 8866;
 	}
+
+    virtual int vprinta(const char * format, const char* str, int d){
+        printf(format, str, d);
+        cout << "functor_test: " << p_src_a  << endl;
+		return 1234;
+    }
 }functor_test;
 
 FORCE_NOINLINE void float_output(double testnum){
@@ -249,15 +344,26 @@ int main(){
 
 	string test_string("Hello world");
 	cout << call_in_stack(from_member_fun(test_string,size)) << endl;
+    cout << call_in_stack(from_nonvirtual_member_fun(test_string,size)) << endl;
     cout << call_in_stack(from_member_fun(test_string,c_str)) << endl;
     //sorry I can not support overloaded member function like following "at", because I can not give a convenient interface for you.
     //cout << call_in_stack(from_member_fun(test_string,at) , 5) << endl;
     call_in_stack(from_member_fun(test_string, reserve , 8));
+    call_in_stack(from_nonvirtual_member_fun(test_string, reserve , 8));
     cout << call_in_stack(from_member_fun(test_string,data)) << endl;
 	functor_test.src = 1024;
 	cout << call_in_stack(from_functor(functor_test,"%s%d\n", "Hello boy,", 1024))<< endl;
 	functor_test.src = 4201;
 	cout << call_in_stack(from_functor(functor_test,"%s%d\n", "Hello boy,", 1024)) << endl;
+
+	cout << call_in_stack(from_virtual_member_fun(functor_test,vprinta, "%s%d\n", "Hello boy,", 1024)) << endl;
+	cout << call_in_stack(from_virtual_member_fun(functor_test,vprintb, "%s%d\n", "Hello boy,", 1024)) << endl;
+    cout << call_in_stack(from_virtual_member_fun(functor_test,vdummy)) << endl;
+
+    cout << call_in_stack(from_nonvirtual_member_fun(functor_test,dummy)) << endl;
+    cout << call_in_stack(from_nonvirtual_member_fun(functor_test,printa, "%s%d\n", "Hello boy,", 1024)) << endl;
+	cout << call_in_stack(from_nonvirtual_member_fun(functor_test,printb, "%s%d\n", "Hello boy,", 1024)) << endl;
+
 	cout << "Ok !" << endl;
     cout << "GCC_VERSION:" << GCC_VERSION << endl;
 	cout << "\"TEST PASSED\""  << endl;

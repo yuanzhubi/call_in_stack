@@ -66,7 +66,7 @@ namespace call_in_stack_impl{
 		const static int float_count = parent::float_count + (type_test<new_type>::is_float ? 1 : 0);\
 	\
 		const static int addtional_stack_cost =  ((parent::intreg_cost != intreg_cost ) || (parent::floatreg_cost != floatreg_cost))\
-		? 0:_COUNT_OF_SIZE(change_ref_to_pointer_size<new_type>::size, WORDSIZE);\
+            ? 0:_COUNT_OF_SIZE(change_ref_to_pointer_size<new_type>::size, WORDSIZE);\
 		const static int stackword_cost = parent::stackword_cost + ((addtional_stack_cost == 0)? 0 : (_ALIGNED_COST(parent::stackword_cost, addtional_stack_cost)));\
 		STATIC_ASSERTER(cost_too_much_stack, stackword_cost < WORDBITSIZE);\
 		const static bool use_stack_ahead = parent::use_stack_ahead || (intreg_cost < parent::max_int_reg_cost_x64_system_v && addtional_stack_cost != 0); \
@@ -113,7 +113,7 @@ namespace call_in_stack_impl{
 		__asm__ ("movq " MACRO_TOSTRING(j*WORDSIZE) "(%rsp), %rsp;\n\t");}
 
 	#define call_with_stack_define(i) \
-	template <MACRO_JOIN(RECURSIVE_FUNC_,i)(define_typenames_begin, define_typenames, define_typenames)typename R, bool has_variable_arguments > \
+	template <MACRO_JOIN(RECURSIVE_FUNC_,i)(define_typenames_begin, define_typenames, define_typenames) typename R, bool has_variable_arguments > \
     FORCE_OPTIMIZATION(O1) FORCE_NOINLINE DLL_LOCAL R do_call (\
 		MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types)  \
 		void* dest_func, char* stack_base ){\
