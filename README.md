@@ -3,10 +3,19 @@ Welcome to call in stack!
 Goto https://github.com/yuanzhubi/call_in_stack/wiki/Welcome-to-call_in_stack for details.
 
 Goto QQ Group :293767138(talk_in_stack) for further discussion.
+---------------------------------------------------------------------------------------------------------------
+
+Version 1.0.6: Important adaptive improvement for lower version of GCC!
+
+In this version:
+
+We add support of using call_in_stack in x64 of old GCC version ( tested since GCC 3.4),  compiled with no optimization option.
+(In previous version of call_in_stack, compiling with no optimization option in x64 of old GCC version will fail to complete compile.)
+
 
 ---------------------------------------------------------------------------------------------------------------
 
-Version 1.0.5: Important adaptive improvement for different version of GCC!
+Version 1.0.5: Important adaptive improvement for higher version of GCC!
 
 In this version:
 
