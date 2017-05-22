@@ -14,7 +14,7 @@ else
 sleep_sec=15
 fi
 
-echo -e "\033[31mThe following test includes some unsafe(even undefined) usage for call_in_stack, so do not be afraid of the warning from test.cpp   \033[0m"
+echo -e "\033[31mThe following test includes some unsafe(even undefined) usage for call_in_stack, so do not be afraid of the warning from test.cpp. \r\nFor low version of gcc that does not support right reference well, you may see template_util.h:569: warning: returning reference to temporary, do not worry about the warning!  \033[0m"
 
 sleep $sleep_sec
 

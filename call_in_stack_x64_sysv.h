@@ -66,7 +66,7 @@ namespace call_in_stack_impl{
 		const static int float_count = parent::float_count + (type_test<new_type>::is_float ? 1 : 0);\
 	\
 		const static int addtional_stack_cost =  ((parent::intreg_cost != intreg_cost ) || (parent::floatreg_cost != floatreg_cost))\
-            ? 0:_COUNT_OF_SIZE(change_ref_to_pointer_size<new_type>::size, WORDSIZE);\
+            ? 0:_COUNT_OF_SIZE(change_ref_to_pointer<new_type>::size, WORDSIZE);\
 		const static int stackword_cost = parent::stackword_cost + ((addtional_stack_cost == 0)? 0 : (_ALIGNED_COST(parent::stackword_cost, addtional_stack_cost)));\
 		STATIC_ASSERTER(cost_too_much_stack, stackword_cost < WORDBITSIZE);\
 		const static bool use_stack_ahead = parent::use_stack_ahead || (intreg_cost < parent::max_int_reg_cost_x64_system_v && addtional_stack_cost != 0); \

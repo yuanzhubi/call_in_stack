@@ -289,8 +289,8 @@ int main(){
 	float_output(1.2);
 	cout << "You should see \"TEST PASSED\" in the end if your compiling environment test passed! "  << endl;
 
-	/* cout <<change_ref_to_pointer_size<doublewordtype>::size<< _COUNT_OF_SIZE(change_ref_to_pointer_size<doublewordtype>::size, WORDSIZE)<<endl;
-	cout << _ALIGNED_COST(_COUNT_OF_SIZE(change_ref_to_pointer_size<doublewordtype>::size, WORDSIZE), 2)<<endl;
+	/* cout <<change_ref_to_pointer<doublewordtype>::size<< _COUNT_OF_SIZE(change_ref_to_pointer<doublewordtype>::size, WORDSIZE)<<endl;
+	cout << _ALIGNED_COST(_COUNT_OF_SIZE(change_ref_to_pointer<doublewordtype>::size, WORDSIZE), 2)<<endl;
 	args_list <int , float , doublewordtype  , long , volatile int , const double ,int &, const int& ,int* , const int& >::out_stackword_cost(cout);
 	args_list <int , float , doublewordtype  , long , volatile int , const double ,int &, const int& ,int* , const int& >::out_stack_padding_reporter(cout); */
 
@@ -356,9 +356,20 @@ int main(){
 	functor_test.src = 4201;
 	cout << call_in_stack(from_functor(functor_test,"%s%d\n", "Hello boy,", 1024)) << endl;
 
+    cout << call_in_stack((*
+            (call_in_stack_impl::member_function_fast<__typeof__((&call_in_stack_impl::change_ref_to_pointer<__typeof__(functor_test)>::content_type::vprinta))>
+             ::funtion_ptr_t*)(((char**)(call_in_stack_impl::member_function_fast<
+                                         __typeof__((&call_in_stack_impl::change_ref_to_pointer<__typeof__(functor_test)>::content_type::vprinta))>::class_type*)
+                                (&functor_test))[0] +
+                               ((call_in_stack_impl::member_function_fast<__typeof__((&call_in_stack_impl::change_ref_to_pointer<__typeof__(functor_test)>::
+                                                                                      content_type::vprinta))>)
+                            ((&call_in_stack_impl::change_ref_to_pointer<__typeof__(functor_test)>::content_type::vprinta))).un.vst.vtable_offset_1 - 1 ))
+                          , &functor_test, "%s%d\n", "Hello boy,", 1024) << endl;
+
 	cout << call_in_stack(from_virtual_member_fun(functor_test,vprinta, "%s%d\n", "Hello boy,", 1024)) << endl;
 	cout << call_in_stack(from_virtual_member_fun(functor_test,vprintb, "%s%d\n", "Hello boy,", 1024)) << endl;
     cout << call_in_stack(from_virtual_member_fun(functor_test,vdummy)) << endl;
+
 
     cout << call_in_stack(from_nonvirtual_member_fun(functor_test,dummy)) << endl;
     cout << call_in_stack(from_nonvirtual_member_fun(functor_test,printa, "%s%d\n", "Hello boy,", 1024)) << endl;

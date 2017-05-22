@@ -36,7 +36,14 @@
 #define ALWAYS_HAS_FRAME_POINTER
 #endif // __OPTIMIZE__
 
+#if (GCC_VERSION < 40600)
+//Just avoid warning (visit pointer of vtable breaks strict-aliasing rules in the view of old GCC version) for -fstrict-aliasing or -O2.
+//You can undef the macro to turn on the optimization if you do not care the warning.
+#define DISABLE_VTABLE_EXPANSION
+#endif
+
 #endif //__GNUC__
+
 
 #include "call_in_stack_x64_sysv.h"
 #include "call_in_stack_x86_sysv.h"

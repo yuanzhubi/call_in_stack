@@ -235,26 +235,26 @@ struct united_type<C&&>: public united_type<C&>{
 
 
 template <typename C>
-struct change_ref_to_pointer_size{
+struct change_ref_to_pointer{
 	const static int size = sizeof(C);
 	typedef C content_type ;
 };
 template <typename C>
-struct change_ref_to_pointer_size<C&> : public change_ref_to_pointer_size<C>{
+struct change_ref_to_pointer<C&> : public change_ref_to_pointer<C>{
 	const static int size = sizeof(C*);
 };
 
 template <typename C>
-struct change_ref_to_pointer_size<const C> : public change_ref_to_pointer_size<C>{
+struct change_ref_to_pointer<const C> : public change_ref_to_pointer<C>{
 };
 
 template <typename C>
-struct change_ref_to_pointer_size<volatile C> : public change_ref_to_pointer_size<C>{
+struct change_ref_to_pointer<volatile C> : public change_ref_to_pointer<C>{
 };
 
 #ifdef ENABLE_RIGHT_VALUE_REFERENCE
 template <typename C>
-struct change_ref_to_pointer_size<C&&> : public change_ref_to_pointer_size<C&>{
+struct change_ref_to_pointer<C&&> : public change_ref_to_pointer<C&>{
 };
 #endif //ENABLE_RIGHT_VALUE_REFERENCE
 
@@ -358,21 +358,21 @@ struct member_function_wrapper;
 template <MACRO_JOIN(RECURSIVE_FUNC_,i)(define_typenames_begin, define_typenames, define_typenames) typename R, typename C> \
 struct member_function_wrapper<R (C::*)(MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types_end)) >{ \
 	DLL_LOCAL inline member_function_wrapper(C& class_obj_a, R (C::*member_funtion_ptr_a)(MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types_end))) \
-	: class_obj(class_obj_a), member_funtion_ptr(member_funtion_ptr_a){}\
-	C& class_obj; \
+	: class_obj(&class_obj_a), member_funtion_ptr(member_funtion_ptr_a){}\
+	C* class_obj; \
 	R (C::*member_funtion_ptr)(MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types_end)); \
 	static R exec(const member_function_wrapper& instance MACRO_JOIN(RECURSIVE_FUNC_,i)(define_pure_typeargs_begin, define_pure_typeargs, define_pure_typeargs_end)){ \
-		return (instance.class_obj.*instance.member_funtion_ptr)(MACRO_JOIN(RECURSIVE_FUNC_,i)(define_args_begin_org, define_args_org, define_args_end_org)); \
+		return (instance.class_obj->*instance.member_funtion_ptr)(MACRO_JOIN(RECURSIVE_FUNC_,i)(define_args_begin_org, define_args_org, define_args_end_org)); \
 	} \
 }; \
 template <MACRO_JOIN(RECURSIVE_FUNC_,i)(define_typenames_begin, define_typenames, define_typenames) typename R, typename C> \
 struct member_function_wrapper<R (C::*)(MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types_end)) const >{ \
 	DLL_LOCAL inline member_function_wrapper(const C& class_obj_a, R (C::*member_funtion_ptr_a)(MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types_end)) const) \
-	: class_obj(class_obj_a), member_funtion_ptr(member_funtion_ptr_a){}\
-	const C& class_obj; \
+	: class_obj(&class_obj_a), member_funtion_ptr(member_funtion_ptr_a){}\
+	const C* class_obj; \
 	R (C::*member_funtion_ptr)(MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types_end)) const; \
 	static R exec(const member_function_wrapper& instance MACRO_JOIN(RECURSIVE_FUNC_,i)(define_pure_typeargs_begin, define_pure_typeargs, define_pure_typeargs_end)){ \
-		return (instance.class_obj.*instance.member_funtion_ptr)(MACRO_JOIN(RECURSIVE_FUNC_,i)(define_args_begin_org, define_args_org, define_args_end_org)); \
+		return (instance.class_obj->*instance.member_funtion_ptr)(MACRO_JOIN(RECURSIVE_FUNC_,i)(define_args_begin_org, define_args_org, define_args_end_org)); \
 	} \
 };
 BATCH_FUNC(member_function_wrapper_define)
@@ -381,12 +381,12 @@ BATCH_FUNC(member_function_wrapper_define)
 template<typename C>
 struct nonvirtual_member_function_wrapper;
 
-#define nonvitural_member_function_wrapper_define(i) \
+#define nonvirtural_member_function_wrapper_define(i) \
 template <MACRO_JOIN(RECURSIVE_FUNC_,i)(define_typenames_begin, define_typenames, define_typenames) typename R, typename C> \
 struct nonvirtual_member_function_wrapper<R (C::*)(MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types_end)) >{ \
 	DLL_LOCAL inline nonvirtual_member_function_wrapper(C& class_obj_a, R (C::*member_funtion_ptr_a)(MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types_end))) \
-	: class_obj(class_obj_a){un.member_funtion_ptr = member_funtion_ptr_a;}\
-	C& class_obj; \
+	: class_obj(&class_obj_a){un.member_funtion_ptr = member_funtion_ptr_a;}\
+	C* class_obj; \
 	typedef R (*funtion_ptr_t)(C* MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types_before, define_types_before)); \
 	union{ \
         struct{ \
@@ -396,15 +396,16 @@ struct nonvirtual_member_function_wrapper<R (C::*)(MACRO_JOIN(RECURSIVE_FUNC_,i)
         R (C::*member_funtion_ptr)(MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types_end)); \
 	}un;\
 	static R exec(const nonvirtual_member_function_wrapper& instance MACRO_JOIN(RECURSIVE_FUNC_,i)(define_pure_typeargs_begin, define_pure_typeargs, define_pure_typeargs_end)){ \
-		char * new_this = (((char*)&(instance.class_obj)) + instance.un.st.this_pointer_offset); \
+		(void) (instance.un.st.this_pointer_offset == 0); \
+		char * new_this = ((char*)(instance.class_obj));  \
 		return instance.un.st.function_ptr( (C*)new_this MACRO_JOIN(RECURSIVE_FUNC_,i)(define_args_begin_org, define_args_org_before, define_args_org_before)); \
 	} \
 }; \
 template <MACRO_JOIN(RECURSIVE_FUNC_,i)(define_typenames_begin, define_typenames, define_typenames) typename R, typename C> \
 struct nonvirtual_member_function_wrapper<R (C::*)(MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types_end)) const >{ \
 	DLL_LOCAL inline nonvirtual_member_function_wrapper(const C& class_obj_a, R (C::*member_funtion_ptr_a)(MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types_end)) const) \
-	: class_obj(class_obj_a){un.member_funtion_ptr = member_funtion_ptr_a;}\
-	const C& class_obj; \
+	: class_obj(&class_obj_a){un.member_funtion_ptr = member_funtion_ptr_a;}\
+	const C* class_obj; \
 	typedef R (*funtion_ptr_t)(const C* MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types_before, define_types_before)); \
 	union{ \
         struct{ \
@@ -414,12 +415,57 @@ struct nonvirtual_member_function_wrapper<R (C::*)(MACRO_JOIN(RECURSIVE_FUNC_,i)
         R (C::*member_funtion_ptr)(MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types_end)) const; \
 	}un;\
 	static R exec(const nonvirtual_member_function_wrapper& instance MACRO_JOIN(RECURSIVE_FUNC_,i)(define_pure_typeargs_begin, define_pure_typeargs, define_pure_typeargs_end)){ \
-		char * new_this = (((char*)&(instance.class_obj)) + instance.un.st.this_pointer_offset); \
+		(void) (instance.un.st.this_pointer_offset == 0); \
+		char * new_this = ((char*)(instance.class_obj));  \
 		return instance.un.st.function_ptr( (const C*)new_this  MACRO_JOIN(RECURSIVE_FUNC_,i)(define_args_begin_org, define_args_org_before, define_args_org_before)); \
 	} \
 };
-BATCH_FUNC(nonvitural_member_function_wrapper_define)
-#undef nonvitural_member_function_wrapper_define
+BATCH_FUNC(nonvirtural_member_function_wrapper_define)
+#undef nonvirtural_member_function_wrapper_define
+
+template<typename C>
+struct member_function_fast;
+
+#define member_function_fast_define(i) \
+template <MACRO_JOIN(RECURSIVE_FUNC_,i)(define_typenames_begin, define_typenames, define_typenames) typename R, typename C> \
+struct member_function_fast<R (C::*)(MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types_end)) >{ \
+	DLL_LOCAL inline member_function_fast(R (C::*member_funtion_ptr_a)(MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types_end))) \
+	{un.member_funtion_ptr = member_funtion_ptr_a;}\
+	typedef R (*funtion_ptr_t)(C* MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types_before, define_types_before)); \
+	typedef C class_type; \
+	union{ \
+        struct{ \
+            funtion_ptr_t function_ptr;\
+            call_in_stack_impl::word_int_t this_pointer_offset; \
+        }st; \
+        struct{ \
+            call_in_stack_impl::word_int_t vtable_offset_1;\
+            call_in_stack_impl::word_int_t this_pointer_offset; \
+        }vst; \
+        R (C::*member_funtion_ptr)(MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types_end)); \
+	}un;\
+}; \
+template <MACRO_JOIN(RECURSIVE_FUNC_,i)(define_typenames_begin, define_typenames, define_typenames) typename R, typename C> \
+struct member_function_fast<R (C::*)(MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types_end)) const >{ \
+	DLL_LOCAL inline member_function_fast(R (C::*member_funtion_ptr_a)(MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types_end)) const) \
+	{un.member_funtion_ptr = member_funtion_ptr_a;}\
+	typedef R (*funtion_ptr_t)(const C* MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types_before, define_types_before)); \
+	typedef C class_type; \
+	union{ \
+        struct{ \
+            funtion_ptr_t function_ptr;\
+            call_in_stack_impl::word_int_t this_pointer_offset; \
+        }st; \
+        struct{ \
+            call_in_stack_impl::word_int_t vtable_offset_1;\
+            call_in_stack_impl::word_int_t this_pointer_offset; \
+        }vst; \
+        R (C::*member_funtion_ptr)(MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types_end)) const; \
+	}un;\
+};
+BATCH_FUNC(member_function_fast_define)
+
+#undef member_function_fast_define
 
 template<typename C>
 struct virtual_member_function_wrapper;
@@ -427,8 +473,8 @@ struct virtual_member_function_wrapper;
 template <MACRO_JOIN(RECURSIVE_FUNC_,i)(define_typenames_begin, define_typenames, define_typenames) typename R, typename C> \
 struct virtual_member_function_wrapper<R (C::*)(MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types_end)) >{ \
 	DLL_LOCAL inline virtual_member_function_wrapper(C& class_obj_a, R (C::*member_funtion_ptr_a)(MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types_end))) \
-	: class_obj(class_obj_a){un.member_funtion_ptr = member_funtion_ptr_a;}\
-	C& class_obj; \
+	: class_obj(&class_obj_a){un.member_funtion_ptr = member_funtion_ptr_a;}\
+	C* class_obj; \
 	typedef R (*funtion_ptr_t)(C* MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types_before, define_types_before)); \
 	union{ \
         struct{ \
@@ -438,7 +484,8 @@ struct virtual_member_function_wrapper<R (C::*)(MACRO_JOIN(RECURSIVE_FUNC_,i)(de
         R (C::*member_funtion_ptr)(MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types_end)); \
 	}un;\
 	static R exec(const virtual_member_function_wrapper& instance MACRO_JOIN(RECURSIVE_FUNC_,i)(define_pure_typeargs_begin, define_pure_typeargs, define_pure_typeargs_end)){ \
-		char * new_this = (((char*)&(instance.class_obj)) + instance.un.st.this_pointer_offset); \
+		(void) (instance.un.st.this_pointer_offset == 0); \
+		char * new_this = ((char*)(instance.class_obj));  \
 		funtion_ptr_t *func = (funtion_ptr_t*)(((char**)new_this)[0] + instance.un.st.vtable_offset_1 - 1 ); \
 		return (*func)( (C*)new_this MACRO_JOIN(RECURSIVE_FUNC_,i)(define_args_begin_org, define_args_org_before, define_args_org_before)); \
 	} \
@@ -446,8 +493,8 @@ struct virtual_member_function_wrapper<R (C::*)(MACRO_JOIN(RECURSIVE_FUNC_,i)(de
 template <MACRO_JOIN(RECURSIVE_FUNC_,i)(define_typenames_begin, define_typenames, define_typenames) typename R, typename C> \
 struct virtual_member_function_wrapper<R (C::*)(MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types_end)) const >{ \
 	DLL_LOCAL inline virtual_member_function_wrapper(const C& class_obj_a, R (C::*member_funtion_ptr_a)(MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types_end)) const) \
-	: class_obj(class_obj_a){un.member_funtion_ptr = member_funtion_ptr_a;}\
-	const C& class_obj; \
+	: class_obj(&class_obj_a){un.member_funtion_ptr = member_funtion_ptr_a;}\
+	const C* class_obj; \
 	typedef R (*funtion_ptr_t)(const C* MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types_before, define_types_before)); \
     union{ \
         struct{ \
@@ -457,7 +504,8 @@ struct virtual_member_function_wrapper<R (C::*)(MACRO_JOIN(RECURSIVE_FUNC_,i)(de
         R (C::*member_funtion_ptr)(MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types_end)) const; \
 	}un;\
 	static R exec(const virtual_member_function_wrapper& instance MACRO_JOIN(RECURSIVE_FUNC_,i)(define_pure_typeargs_begin, define_pure_typeargs, define_pure_typeargs_end)){ \
-		char * new_this = (((char*)&(instance.class_obj)) + instance.un.st.this_pointer_offset); \
+		(void) (instance.un.st.this_pointer_offset == 0); \
+		char * new_this = ((char*)(instance.class_obj));  \
 		funtion_ptr_t *func = (funtion_ptr_t*)(((char**)new_this)[0] + instance.un.st.vtable_offset_1 - 1 ); \
 		return (*func)( (const C*)new_this MACRO_JOIN(RECURSIVE_FUNC_,i)(define_args_begin_org, define_args_org_before, define_args_org_before)); \
 	} \
