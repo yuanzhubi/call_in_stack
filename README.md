@@ -2,6 +2,13 @@ Welcome to call in stack!
 
 Call a function in a new stack that allocated anywhere. Do not be afraid of stack limit in your coroutines! Try to make your stack shareable between all coroutines!
 
+```bash
+#include <call_in_stack.h>
+char buffer[4096];
+printf(buffer, "Hello world!\n");
+//Now printf run in buffer as its stack!
+```
+
 Goto https://github.com/yuanzhubi/call_in_stack/wiki/Welcome-to-call_in_stack for details.
 
 Goto QQ Group :293767138(talk_in_stack) for further discussion.
