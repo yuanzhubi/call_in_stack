@@ -5,7 +5,7 @@ Call a function in a new stack that allocated anywhere. Do not be afraid of stac
 ```bash
 #include "call_in_stack.h"
 char buffer[4096];
-printf(buffer, "Hello world!\n");
+call_in_stack(buffer, &printf, "Hello world!\n");
 //Now printf run in buffer as its stack!
 ```
 
