@@ -2,6 +2,8 @@ Welcome to call in stack!
 
 Call a function in a new stack that allocated anywhere. Do not be afraid of stack limit in your coroutines! Try to make your stack shareable between all coroutines!
 
+Attention! It is not a coroutine library, but a library to help your stackful coroutine work more effeicently in memory cost.
+
 ```bash
 #include "call_in_stack.h"
 char buffer[4096];
@@ -17,6 +19,10 @@ Goto QQ Group :293767138(talk_in_stack) for further discussion.
 Q:Why it is called "call_in_stack"?
 
 A:It behaves like the impelment of linux system call(the kernel space codes must run in a new stack to avoid user codes know its temporate result saved in memeroy) but it supports more(either the count or the type) arguments and tyep safe. What's more, the X86 Linux kernel uses the name "call_on_stack" while the arm kernel uses "call_with_stack". So we choose "call_in_stack" ^_^!
+
+Q:When it is used?
+
+A:It can be used for function calling that never leads to stackful coroutines switching then the function call do not cost stack of current coroutine. What's more, it is useful for designing a new coroutine library, especially when you want to start a new coroutine(with any type of arguments).
 
 
 ---------------------------------------------------------------------------------------------------------------
