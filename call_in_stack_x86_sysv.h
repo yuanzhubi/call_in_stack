@@ -13,12 +13,11 @@
 
 #define STACK_ALIGNMENT_SIZE (16)		//After GCC 4.5 or in Apple MAC, it is required for 16 bytes stack alignment.
 
-
+#include "call_in_stack_config.h"
+#include "template_util.h"
 
 namespace call_in_stack_impl{
-	typedef unsigned int word_int_t;
-	#include "template_util.h"
-
+	
 	#define args_list_define(i) \
 	template<MACRO_JOIN(RECURSIVE_FUNC_,i)(define_typenames_begin, define_typenames, define_typenames_end)> \
 	struct args_list< MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types_end)> \
@@ -26,8 +25,8 @@ namespace call_in_stack_impl{
 		typedef args_list< MACRO_JOIN(RECURSIVE_FUNC_,i)(define_parent_begin, define_parent, define_parent_end)> parent; \
 		typedef MACRO_JOIN(t,i) new_type; \
 		\
-		const static word_int_t addtional_stack_cost = _COUNT_OF_SIZE(change_ref_to_pointer<new_type>::size, WORDSIZE);\
-		const static word_int_t stackword_cost = parent::stackword_cost + ((addtional_stack_cost == 0)? 0 : (_ALIGNED_COST(parent::stackword_cost, addtional_stack_cost)));\
+		const static size_t addtional_stack_cost = _COUNT_OF_SIZE(change_ref_to_pointer<new_type>::size, WORDSIZE);\
+		const static size_t stackword_cost = parent::stackword_cost + ((addtional_stack_cost == 0)? 0 : (_ALIGNED_COST(parent::stackword_cost, addtional_stack_cost)));\
 		\
 		assert_not_class_not_largesize<new_type, MAX_ARGUMENT_SIZE> assert_instance;\
 		template<typename O>\
@@ -84,11 +83,11 @@ namespace call_in_stack_impl{
 	//#undef func_back
 	//#undef func_back1
 
-	#define DEF_SP(sp_value) DECL_REG_VAR(word_int_t, sp_value, esp)
+	#define DEF_SP(sp_value) DECL_REG_VAR(size_t, sp_value, esp)
 
 	//Maybe your compiler does not support register variable? use DEF_SP_BAK instead!
 	#define GET_SP(sp_value) __asm__ ("movq 	%%esp,  %0;	\n\t" : "=X"(sp_value))
-	#define DEF_SP_BAK(sp_value) word_int_t sp_value; GET_SP(sp_value)
+	#define DEF_SP_BAK(sp_value) size_t sp_value; GET_SP(sp_value)
 }
 #endif
 #endif

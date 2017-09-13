@@ -13,11 +13,11 @@
 
 #define STACK_ALIGNMENT_SIZE (16)
 
+#include "call_in_stack_config.h"
+#include "template_util.h"
 
 namespace call_in_stack_impl{
-	typedef unsigned long long word_int_t;
-	#include "template_util.h"
-
+	
 	template <typename T>
 	struct type_test{
 		const static int floatreg_cost = 0;
@@ -102,10 +102,10 @@ namespace call_in_stack_impl{
 	//We save arguments and previous sp in new stack
 	#define STACK_COST(T) (T::stackword_cost + 1)
 
-    //((arg_types::stack_padding_reporter & (((word_int_t)1)<<((word_int_t)(arg_types::stackword_cost-j))%WORDBITSIZE)) != 0) means the space is for padding(and lea is cheaper than push)
+    //((arg_types::stack_padding_reporter & (((size_t)1)<<((size_t)(arg_types::stackword_cost-j))%WORDBITSIZE)) != 0) means the space is for padding(and lea is cheaper than push)
 	// Here "%WORDBITSIZE" is to escape from shifting overflow warning...
     #define push_stack_define(j) if(arg_types::stackword_cost >= j ){\
-		if((arg_types::stack_padding_reporter & (((word_int_t)1)<<((word_int_t)(arg_types::stackword_cost-j))%WORDBITSIZE)) != 0) \
+		if((arg_types::stack_padding_reporter & (((size_t)1)<<((size_t)(arg_types::stackword_cost-j))%WORDBITSIZE)) != 0) \
 				__asm__ ("pushq " MACRO_TOSTRING(j*WORDSIZE) "(%r10);\n\t");\
 		else 	__asm__ ("leaq -" MACRO_TOSTRING(WORDSIZE) "(%rsp), %rsp;\n\t");}
 
@@ -169,10 +169,10 @@ namespace call_in_stack_impl{
 	//We save arguments and previous sp in new stack
 	#define STACK_COST(T) (T::stackword_cost )
 
-    //((arg_types::stack_padding_reporter & (((word_int_t)1)<<((word_int_t)(arg_types::stackword_cost-j))%WORDBITSIZE)) != 0) means the space is for padding(and lea is cheaper than push)
+    //((arg_types::stack_padding_reporter & (((size_t)1)<<((size_t)(arg_types::stackword_cost-j))%WORDBITSIZE)) != 0) means the space is for padding(and lea is cheaper than push)
 	// Here "%WORDBITSIZE" is to escape from shifting overflow warning...
     #define push_stack_define(j) if(arg_types::stackword_cost >= j ){\
-		if((arg_types::stack_padding_reporter & (((word_int_t)1)<<((word_int_t)(arg_types::stackword_cost-j))%WORDBITSIZE)) != 0) \
+		if((arg_types::stack_padding_reporter & (((size_t)1)<<((size_t)(arg_types::stackword_cost-j))%WORDBITSIZE)) != 0) \
 				__asm__ ("pushq " MACRO_TOSTRING(j*WORDSIZE+WORDSIZE) "(%rbp);\n\t");\
 		else 	__asm__ ("leaq -" MACRO_TOSTRING(WORDSIZE) "(%rsp), %rsp;\n\t");}
 
@@ -222,10 +222,10 @@ namespace call_in_stack_impl{
 	//#undef func_back
 	//#undef func_back1
 
-	#define DEF_SP(sp_value) DECL_REG_VAR(word_int_t, sp_value, rsp)
+	#define DEF_SP(sp_value) DECL_REG_VAR(size_t, sp_value, rsp)
 	//Maybe your compiler does not support register variable? use DEF_SP_BAK instead!
 	#define GET_SP(sp_value) __asm__ ("movq 	%%rsp,  %0;	\n\t" : "=X"(sp_value))
-	#define DEF_SP_BAK(sp_value) word_int_t sp_value; GET_SP(sp_value)
+	#define DEF_SP_BAK(sp_value) size_t sp_value; GET_SP(sp_value)
 }
 
 #endif

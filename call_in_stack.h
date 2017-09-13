@@ -20,8 +20,8 @@ MACRO_JOIN(RECURSIVE_FUNC_,j)(define_type_args_ex_begin, define_type_args_ex, de
 	const int default_stack_length = 16*1024; \
 	struct auto_stack_buffer{ \
 		char* stack_buffer; \
-		auto_stack_buffer(unsigned int the_size):stack_buffer(new char[the_size]){} \
-		~auto_stack_buffer(){delete []stack_buffer;} \
+		auto_stack_buffer(unsigned int the_size):stack_buffer((char*)malloc(the_size)){} \
+		~auto_stack_buffer(){free(stack_buffer);} \
 	}z(default_stack_length); \
 	typedef typename function_property<T>::return_type return_type; \
 	typedef args_list<MACRO_JOIN(RECURSIVE_FUNC_,i)(define_rtypes_begin, define_rtypes, define_rtypes) \
@@ -41,8 +41,8 @@ MACRO_JOIN(RECURSIVE_FUNC_,j)(define_type_args_ex_begin, define_type_args_ex, de
 , typename call_in_stack_impl::static_asserter< i == call_in_stack_impl::function_property<T>::arguments_count && (call_in_stack_impl::function_property<T>::has_variable_arguments || j == 0)>::type *p = 0){ \
 	struct auto_stack_buffer{ \
 		char* stack_buffer; \
-		auto_stack_buffer(unsigned int the_size):stack_buffer(new char[the_size]){} \
-		~auto_stack_buffer(){delete []stack_buffer;} \
+		auto_stack_buffer(unsigned int the_size):stack_buffer((char*)malloc(the_size)){} \
+		~auto_stack_buffer(){free(stack_buffer);} \
 	}z(stack_length); \
     using namespace call_in_stack_impl; \
 	typedef typename function_property<T>::return_type return_type; \
@@ -97,7 +97,7 @@ CALL_IN_STACK_DEFINE(0,0)
 
 //call_in_stack_safe is safe for recursively call_in_stack with same stack_buffer(maybe it is a global variable?) as stack.
 #define IS_IN_CALL_STACK(dest, stack_begin, stack_end) \
-	(((word_int_t)(((word_int_t)(dest) - (word_int_t)(stack_begin)) ^ ((word_int_t)(stack_end) - (word_int_t)dest))) > 0)
+	(((size_t)(((size_t)(dest) - (size_t)(stack_begin)) ^ ((size_t)(stack_end) - (size_t)dest))) > 0)
 
 #define CALL_IN_STACK_SAFE_DEFINE(i, j) \
 template <MACRO_JOIN(RECURSIVE_FUNC_, j)(define_typenames_ex_begin, define_typenames_ex, define_typenames_ex) typename T > \

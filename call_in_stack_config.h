@@ -1,6 +1,8 @@
 #ifndef _CALLINSTACK_CONFIG_H_
 #define _CALLINSTACK_CONFIG_H_
 
+#include <stdlib.h>
+
 //Using ENABLE_RIGHT_VALUE_REFERENCE if your GCC version and compiler option supports right value reference!
 //#define ENABLE_RIGHT_VALUE_REFERENCE
 

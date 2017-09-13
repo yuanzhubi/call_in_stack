@@ -131,9 +131,9 @@ join_func(i, 10,  xyfunc)
 #define define_parent(i) define_types(i)
 #define define_parent_end(i) void
 
-
+namespace call_in_stack_impl{
 //unite the type is to reduce the size of the binary compile result via reducing types,
-//including union all the pointer and reference type to word_int_t,
+//including union all the pointer and reference type to size_t,
 //unsigned and not unsigned integer type to not unsigned.
 template <typename C>
 struct united_type{
@@ -145,7 +145,7 @@ struct united_type{
 
 template <typename C>
 struct united_type<C*>{
-	typedef word_int_t type;
+	typedef size_t type;
 	DLL_LOCAL inline static type forward(const C* arg){
 		return (type)arg;
 	}
@@ -153,7 +153,7 @@ struct united_type<C*>{
 
 template <typename C>
 struct united_type<C&>{
-	typedef word_int_t type;
+	typedef size_t type;
 	DLL_LOCAL inline static type forward(const C& arg){
 		return (type)(&arg);
 	}
@@ -161,7 +161,7 @@ struct united_type<C&>{
 
 template <typename C>
 struct united_type<volatile C&>{
-	typedef word_int_t type;
+	typedef size_t type;
 	DLL_LOCAL inline static type forward(volatile C& arg){
 		return (type)(&arg);
 	}
@@ -391,7 +391,7 @@ struct nonvirtual_member_function_wrapper<R (C::*)(MACRO_JOIN(RECURSIVE_FUNC_,i)
 	union{ \
         struct{ \
             funtion_ptr_t function_ptr;\
-            call_in_stack_impl::word_int_t this_pointer_offset; \
+            size_t this_pointer_offset; \
         }st; \
         R (C::*member_funtion_ptr)(MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types_end)); \
 	}un;\
@@ -410,7 +410,7 @@ struct nonvirtual_member_function_wrapper<R (C::*)(MACRO_JOIN(RECURSIVE_FUNC_,i)
 	union{ \
         struct{ \
             funtion_ptr_t function_ptr;\
-            call_in_stack_impl::word_int_t this_pointer_offset; \
+            size_t this_pointer_offset; \
         }st; \
         R (C::*member_funtion_ptr)(MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types_end)) const; \
 	}un;\
@@ -436,11 +436,11 @@ struct member_function_fast<R (C::*)(MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_
 	union{ \
         struct{ \
             funtion_ptr_t function_ptr;\
-            call_in_stack_impl::word_int_t this_pointer_offset; \
+            size_t this_pointer_offset; \
         }st; \
         struct{ \
-            call_in_stack_impl::word_int_t vtable_offset_1;\
-            call_in_stack_impl::word_int_t this_pointer_offset; \
+            size_t vtable_offset_1;\
+            size_t this_pointer_offset; \
         }vst; \
         R (C::*member_funtion_ptr)(MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types_end)); \
 	}un;\
@@ -454,11 +454,11 @@ struct member_function_fast<R (C::*)(MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_
 	union{ \
         struct{ \
             funtion_ptr_t function_ptr;\
-            call_in_stack_impl::word_int_t this_pointer_offset; \
+            size_t this_pointer_offset; \
         }st; \
         struct{ \
-            call_in_stack_impl::word_int_t vtable_offset_1;\
-            call_in_stack_impl::word_int_t this_pointer_offset; \
+            size_t vtable_offset_1;\
+            size_t this_pointer_offset; \
         }vst; \
         R (C::*member_funtion_ptr)(MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types_end)) const; \
 	}un;\
@@ -478,8 +478,8 @@ struct virtual_member_function_wrapper<R (C::*)(MACRO_JOIN(RECURSIVE_FUNC_,i)(de
 	typedef R (*funtion_ptr_t)(C* MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types_before, define_types_before)); \
 	union{ \
         struct{ \
-            call_in_stack_impl::word_int_t vtable_offset_1;\
-            call_in_stack_impl::word_int_t this_pointer_offset; \
+            size_t vtable_offset_1;\
+            size_t this_pointer_offset; \
         }st; \
         R (C::*member_funtion_ptr)(MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types_end)); \
 	}un;\
@@ -498,8 +498,8 @@ struct virtual_member_function_wrapper<R (C::*)(MACRO_JOIN(RECURSIVE_FUNC_,i)(de
 	typedef R (*funtion_ptr_t)(const C* MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types_before, define_types_before)); \
     union{ \
         struct{ \
-            call_in_stack_impl::word_int_t vtable_offset_1;\
-            call_in_stack_impl::word_int_t this_pointer_offset; \
+            size_t vtable_offset_1;\
+            size_t this_pointer_offset; \
         }st; \
         R (C::*member_funtion_ptr)(MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types_end)) const; \
 	}un;\
@@ -524,15 +524,15 @@ BATCH_FUNC(vitural_member_function_wrapper_define)
 
 //after arguments passing and save ip pointer, the stack pointer should be at 16x + WORDSIZE bytes(then sp - wordsize must be 16x)
 //GET_ADDRESS_ALIENED is bad implemented because it does not know cost is const.
-// #define GET_ADDRESS_ALIENED(prev_stack_base, cost)   ((prev_stack_base) - ((((call_in_stack_impl::word_int_t)(prev_stack_base)-(cost))&(0x10-1)) ^ WORDSIZE))
+// #define GET_ADDRESS_ALIENED(prev_stack_base, cost)   ((prev_stack_base) - ((((size_t)(prev_stack_base)-(cost))&(0x10-1)) ^ WORDSIZE))
 
 //after arguments passing, the stack pointer should be at 16x bytes
 template <int Cost>
 DLL_LOCAL inline char* get_stack_base(char* prev_stack_base){
 	if((((Cost) * WORDSIZE) & (STACK_ALIGNMENT_SIZE-1)) == 0){
-		return (char*)(((call_in_stack_impl::word_int_t)prev_stack_base) & (~(STACK_ALIGNMENT_SIZE - 1)));
+		return (char*)(((size_t)prev_stack_base) & (~(STACK_ALIGNMENT_SIZE - 1)));
 	}else{
-		return prev_stack_base - (((call_in_stack_impl::word_int_t)prev_stack_base & (STACK_ALIGNMENT_SIZE-1)) ^ (((Cost)  * WORDSIZE) & (STACK_ALIGNMENT_SIZE-1)));
+		return prev_stack_base - (((size_t)prev_stack_base & (STACK_ALIGNMENT_SIZE-1)) ^ (((Cost)  * WORDSIZE) & (STACK_ALIGNMENT_SIZE-1)));
 	}
 }
 
@@ -574,6 +574,6 @@ struct return_type_adapter<C&&>{
 //The second mov is to fool the compiler for "reading local variable before initialization" warning.
 #define DECL_REG_VAR_IMPL(type, name, reg) register type name asm (MACRO_TOSTRING(reg)); __asm__ ("mov 	%%" MACRO_TOSTRING(reg) ",  %0;	\n\t" : "=X"(name));
 #define DECL_REG_VAR(type, name, reg) DECL_REG_VAR_IMPL(type, name, reg)
-
+}
 
 #endif
