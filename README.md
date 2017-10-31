@@ -18,7 +18,7 @@ Goto QQ Group :293767138(talk_in_stack) for further discussion.
 ---------------------------------------------------------------------------------------------------------------
 Q:Why it is called "call_in_stack"?
 
-A:It behaves like the impelment of linux system call(the kernel space codes must run in a new stack to avoid user codes know its temporate result saved in memeroy) but it supports more(either the count or the type) arguments and tyep safe. What's more, the X86 Linux kernel uses the name "call_on_stack" while the arm kernel uses "call_with_stack". So we choose "call_in_stack" ^_^!
+A:It behaves like the impelment of linux system call(the kernel space codes must run in a new stack to avoid user codes know its temporate result saved in memeroy) but it supports more(either the count or the type) arguments and type safe. What's more, the X86 Linux kernel uses the name "call_on_stack" while the arm kernel uses "call_with_stack". So we choose "call_in_stack" ^_^!
 
 Q:When it is used?
 
