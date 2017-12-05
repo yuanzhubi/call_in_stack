@@ -22,7 +22,8 @@ A:It behaves like the impelment of linux system call(the kernel space codes must
 
 Q:When it is used?
 
-A:It can be used for function calling that never leads to stackful coroutines switching then the function call do not cost stack of current coroutine. What's more, it is useful for designing a new coroutine library, especially when you want to start a new coroutine(with any type of arguments).
+A:It can be used for function calling that never leads to stackful coroutines switching then the function call do not cost stack of current coroutine. It is also useful for deep recursive calling like regular expressions analysis. 
+What's more, it can be used for designing a new stackless coroutine library by caller allocating new stack for callee(but the caller do not know the accurate stack need of the callee so the size is rough)  in c++03, while in std::experimental::coroutine the callee allocating storage only for the arguments and local variables that will be used(resumed) after await or yield, with more accurate space cost but c++17 needed.
 
 
 ---------------------------------------------------------------------------------------------------------------
