@@ -106,11 +106,11 @@ namespace call_in_stack_impl{
 	// Here "%WORDBITSIZE" is to escape from shifting overflow warning...
     #define push_stack_define(j) if(arg_types::stackword_cost >= j ){\
 		if((arg_types::stack_padding_reporter & (((size_t)1)<<((size_t)(arg_types::stackword_cost-j))%WORDBITSIZE)) != 0) \
-				__asm__ ("pushq " MACRO_TOSTRING(j*WORDSIZE) "(%r10);\n\t");\
-		else 	__asm__ ("leaq -" MACRO_TOSTRING(WORDSIZE) "(%rsp), %rsp;\n\t");}
+				__asm__ __volatile__ ("pushq " MACRO_TOSTRING(j*WORDSIZE) "(%r10);\n\t");\
+		else 	__asm__ __volatile__ ("leaq -" MACRO_TOSTRING(WORDSIZE) "(%rsp), %rsp;\n\t");}
 
 	#define restore_stack_define(j) if(arg_types::stackword_cost == j){\
-		__asm__ ("movq " MACRO_TOSTRING(j*WORDSIZE) "(%rsp), %rsp;\n\t");}
+		__asm__ __volatile__ ("movq " MACRO_TOSTRING(j*WORDSIZE) "(%rsp), %rsp;\n\t");}
 
 	#define call_with_stack_define(i) \
 	template <MACRO_JOIN(RECURSIVE_FUNC_,i)(define_typenames_begin, define_typenames, define_typenames) typename R, bool has_variable_arguments > \
@@ -119,18 +119,18 @@ namespace call_in_stack_impl{
 		void* dest_func, char* stack_base ){\
 		typedef args_list<MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types_end)> arg_types; \
 		if(arg_types::intreg_cost >= 6){\
-			__asm__ (	"movq 	%0,  	%%r11;		\n\t" 	\
+			__asm__ __volatile__ (	"movq 	%0,  	%%r11;		\n\t" 	\
 						::"m"(dest_func)		\
 					);\
 		}\
 	\
 		if(arg_types::stackword_cost == 0 && arg_types::intreg_cost <= 4){\
-			__asm__ (	"movq 	%%rsp,  -" MACRO_TOSTRING(WORDSIZE) "(%0);		\n\t" 	\
+			__asm__ __volatile__ (	"movq 	%%rsp,  -" MACRO_TOSTRING(WORDSIZE) "(%0);		\n\t" 	\
 						"leaq 	-" MACRO_TOSTRING(WORDSIZE) "(%0),  %%rsp;		\n\t" 	\
 						::"X"(stack_base)	\
 					);\
 		}else{										\
-			__asm__ (	"movq 	%%rsp,  %%r10;		\n\t" 	\
+			__asm__ __volatile__ (	"movq 	%%rsp,  %%r10;		\n\t" 	\
 						"movq 	%0,  	%%rsp;		\n\t" 	\
 						"pushq 	%%r10;				\n\t"   \
 						::"X"(stack_base)		\
@@ -139,20 +139,20 @@ namespace call_in_stack_impl{
 		}\
 	\
 		if(arg_types::float_count > 0 && has_variable_arguments){\
-			__asm__ (	"movq 	%0,  %%rax;			\n\t"	\
+			__asm__ __volatile__ (	"movq 	%0,  %%rax;			\n\t"	\
 					:: "X"(arg_types::float_count));	\
 		}\
 	\
 		if(arg_types::intreg_cost >= 6){					\
-			__asm__ (	"callq 	*%r11;				\n\t");	\
+			__asm__ __volatile__ (	"callq 	*%r11;				\n\t");	\
 		}else{												\
-			__asm__ (	"callq	*%0					\n\t"	\
+			__asm__ __volatile__ (	"callq	*%0					\n\t"	\
 					::"r"(dest_func):"rax"						\
 			);												\
 		}													\
 	\
 		func_back(restore_stack_define)						\
-		__asm__ ("retq;\n\t");                   \
+		__asm__ __volatile__ ("retq;\n\t");                   \
 		DUMMY_RETURN(R)					\
 	}
 
@@ -173,11 +173,11 @@ namespace call_in_stack_impl{
 	// Here "%WORDBITSIZE" is to escape from shifting overflow warning...
     #define push_stack_define(j) if(arg_types::stackword_cost >= j ){\
 		if((arg_types::stack_padding_reporter & (((size_t)1)<<((size_t)(arg_types::stackword_cost-j))%WORDBITSIZE)) != 0) \
-				__asm__ ("pushq " MACRO_TOSTRING(j*WORDSIZE+WORDSIZE) "(%rbp);\n\t");\
-		else 	__asm__ ("leaq -" MACRO_TOSTRING(WORDSIZE) "(%rsp), %rsp;\n\t");}
+				__asm__ __volatile__ ("pushq " MACRO_TOSTRING(j*WORDSIZE+WORDSIZE) "(%rbp);\n\t");\
+		else 	__asm__ __volatile__ ("leaq -" MACRO_TOSTRING(WORDSIZE) "(%rsp), %rsp;\n\t");}
 
 	#define restore_stack_define(j) if(arg_types::stackword_cost == j){\
-		__asm__ ("movq %rbp, %rsp;\n\t");  __asm__ ("pop %rbp;\n\t");}
+		__asm__ __volatile__ ("movq %rbp, %rsp;\n\t");  __asm__ __volatile__ ("pop %rbp;\n\t");}
 
 	#define call_with_stack_define(i) \
 	template <MACRO_JOIN(RECURSIVE_FUNC_,i)(define_typenames_begin, define_typenames, define_typenames)typename R, bool has_variable_arguments > \
@@ -185,17 +185,19 @@ namespace call_in_stack_impl{
 		MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types)  \
 		void* dest_func, char* stack_base ){\
 		typedef args_list<MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types_end)> arg_types; \
-		if(arg_types::float_count > 0 && has_variable_arguments){\
-			__asm__ (	"movq 	%0,  %%rax;			\n\t"	\
-					:: "X"(arg_types::float_count));	\
-		}\
-        __asm__ ("mov 	%0, %%rsp;		\n\t" 	\
+		__asm__ __volatile__ ("":::"rax","rdi","rsi","rdx","rcx","r8","r9"); \
+        __asm__ __volatile__ ("movq 	%0, %%rsp;		\n\t" 	\
                 ::"X"(stack_base));			\
         func_back1(push_stack_define)			\
-		__asm__ ("call 	*%0;			\n\t" 	\
+		if(arg_types::float_count > 0 && has_variable_arguments){\
+			__asm__ __volatile__ (	"movq 	%0,  %%rax;			\n\t"	\
+					:: "X"(arg_types::float_count));	\
+		}\
+		__asm__ __volatile__ ("":::"rax","rdi","rsi","rdx","rcx","r8","r9"); \
+		__asm__ __volatile__ ("call 	*%0;			\n\t" 	\
 					::"X"(dest_func));			\
 		func_back(restore_stack_define)			\
-		__asm__ ("retq;\n\t");                   \
+		__asm__ __volatile__ ("retq;\n\t");                   \
 		DUMMY_RETURN(R)					\
 	}
 
@@ -224,7 +226,7 @@ namespace call_in_stack_impl{
 
 	#define DEF_SP(sp_value) DECL_REG_VAR(size_t, sp_value, rsp)
 	//Maybe your compiler does not support register variable? use DEF_SP_BAK instead!
-	#define GET_SP(sp_value) __asm__ ("movq 	%%rsp,  %0;	\n\t" : "=X"(sp_value))
+	#define GET_SP(sp_value) __asm__ __volatile__ ("movq 	%%rsp,  %0;	\n\t" : "=X"(sp_value))
 	#define DEF_SP_BAK(sp_value) size_t sp_value; GET_SP(sp_value)
 }
 

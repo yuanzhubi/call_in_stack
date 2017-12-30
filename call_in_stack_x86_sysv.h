@@ -42,7 +42,7 @@ namespace call_in_stack_impl{
 
 
 	#define push_stack_define(j) if(arg_types::stackword_cost >= j ){\
-       __asm__ ("push " MACRO_TOSTRING(j*WORDSIZE+WORDSIZE) "(%ebp);\n\t");}
+       __asm__ __volatile__ ("push " MACRO_TOSTRING(j*WORDSIZE+WORDSIZE) "(%ebp);\n\t");}
 
 	//MAX_ARGUMENT_SIZE = 3*WORDSIZE, 10*3=30,
 	#define func_back1(func)  func(30) func(29) func(28) func(27) func(26) func(25) func(24) func(23) func(22) func(21) func(20) func(19) func(18) func(17) func(16) func(15) func(14) func(13) func(12) func(11) func(10) func(9) func(8) func(7) func(6) func(5) func(4) func(3) func(2) func(1)
@@ -58,12 +58,12 @@ namespace call_in_stack_impl{
 		MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types)  \
 		void* dest_func, char* stack_base){\
 		typedef args_list<MACRO_JOIN(RECURSIVE_FUNC_,i)(define_types_begin, define_types, define_types_end)> arg_types; \
-		__asm__ ("mov 	%0, %%esp;		\n\t" 	\
+		__asm__ __volatile__ ("mov 	%0, %%esp;		\n\t" 	\
 					::"m"(stack_base));			\
 		func_back1(push_stack_define)			\
-		__asm__ ("call 	*%0;			\n\t" 	\
+		__asm__ __volatile__ ("call 	*%0;			\n\t" 	\
 					::"m"(dest_func));			\
-        __asm__ ("mov 	%ebp, %esp;		\n\t");	 __asm__ ("pop 	%ebp;\n\t"); __asm__ ("ret;\n\t");\
+        __asm__ __volatile__ ("mov 	%ebp, %esp;		\n\t");	 __asm__ __volatile__ ("pop 	%ebp;\n\t"); __asm__ __volatile__ ("ret;\n\t");\
         DUMMY_RETURN(R);\
 	}
 	#pragma GCC push_options
@@ -86,7 +86,7 @@ namespace call_in_stack_impl{
 	#define DEF_SP(sp_value) DECL_REG_VAR(size_t, sp_value, esp)
 
 	//Maybe your compiler does not support register variable? use DEF_SP_BAK instead!
-	#define GET_SP(sp_value) __asm__ ("movq 	%%esp,  %0;	\n\t" : "=X"(sp_value))
+	#define GET_SP(sp_value) __asm__ __volatile__ ("movq 	%%esp,  %0;	\n\t" : "=X"(sp_value))
 	#define DEF_SP_BAK(sp_value) size_t sp_value; GET_SP(sp_value)
 }
 #endif
