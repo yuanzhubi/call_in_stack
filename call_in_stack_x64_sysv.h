@@ -138,7 +138,7 @@ namespace call_in_stack_impl{
             func_back1(push_stack_define)                   \
         }\
     \
-        if(arg_types::float_count > 0 && has_variable_arguments){\
+        if(has_variable_arguments){\
             __asm__ __volatile__ (  "movq   %0,  %%rax;         \n\t"   \
                     :: "X"(arg_types::float_count));    \
         }\
@@ -189,7 +189,7 @@ namespace call_in_stack_impl{
         __asm__ __volatile__ ("movq     %0, %%rsp;      \n\t"   \
                 ::"X"(stack_base):"rax","rdi","rsi","rdx","rcx","r8","r9");         \
         func_back1(push_stack_define)           \
-        if(arg_types::float_count > 0 && has_variable_arguments){\
+        if(has_variable_arguments){\
             __asm__ __volatile__ (  "movq   %0,  %%rax;         \n\t"   \
                     :: "X"(arg_types::float_count));    \
         }\
