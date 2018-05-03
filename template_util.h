@@ -522,8 +522,8 @@ BATCH_FUNC(vitural_member_function_wrapper_define)
 //So _ALIGNED_BY((prev), (new_cost)) - (prev) is ready for padding.
 #define _ALIGNED_COST(prev, new_cost) _ALIGNED_BY((prev), (new_cost)) - (prev) + (new_cost)
 
-//after arguments passing and save ip pointer, the stack pointer should be at 16x + WORDSIZE bytes(then sp - wordsize must be 16x)
-//GET_ADDRESS_ALIENED is bad implemented because it does not know cost is const.
+//after arguments passing and save ip pointer, the stack pointer should be at 16x - WORDSIZE bytes(then sp + wordsize must be 16x)
+//GET_ADDRESS_ALIENED is bad implemented because it does not know that the cost is const.
 // #define GET_ADDRESS_ALIENED(prev_stack_base, cost)   ((prev_stack_base) - ((((size_t)(prev_stack_base)-(cost))&(0x10-1)) ^ WORDSIZE))
 
 //after arguments passing, the stack pointer should be at 16x bytes
