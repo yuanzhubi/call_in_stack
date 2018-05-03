@@ -232,5 +232,4 @@ namespace call_in_stack_impl{
 
 #endif
 
-
 #endif
