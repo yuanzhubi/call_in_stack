@@ -1,6 +1,6 @@
 Welcome to call in stack!
 
-Call a function in a new stack that allocated anywhere. Do not be afraid of stack limit in your coroutines! Try to make your stack shareable between all coroutines!
+Call a function in a new stack that can be allocated anywhere. Do not be afraid of stack limit in your coroutines! Try to make your stack shareable between all coroutines!
 
 Attention! It is not a coroutine library, but a library to help your stackful coroutine work more effeicently in memory cost.
 
@@ -65,3 +65,88 @@ call_in_stack_safe(buf, from_functor(
 ),2) ;
 
 That means you can write most of your codes of function in a new stack!
+
+---------------------------------------------------------------------------------------------------------------
+
+NOW HERE COMES THE PROGRAM OF STACK
+
+#include<stdio.h>
+#include<stdlib.h>
+ 
+#define MAX 5	 
+int p=-1,stack[MAX];
+void push();
+void pop();
+void display();
+ 
+void main()
+{
+  int ch;
+  while(1)	
+  {
+    printf("\n*** Stack Menu ***");
+    printf("\n\n1.Push\n2.Pop\n3.Display\n4.Exit");
+    printf("\n\nEnter your choice(1-4):");
+    scanf("%d",&ch);
+    switch(ch)
+    {
+      case 1: push();
+	      break;
+		
+      case 2: pop();
+	      break;
+		
+      case 3: display();
+	      break;
+		
+      case 4: exit(0);
+			
+      default: printf("\nWrong Choice!!");
+    }
+  }
+}
+ 
+void push()
+{
+  int val;
+  if(p==MAX-1)
+  {
+    printf("\nStack is full!!");
+  }
+  else
+  {
+    printf("\nEnter element to push:");
+    scanf("%d",&val);
+    p=p+1;
+    stack[p]=val;
+  }
+}
+ 
+void pop()
+{
+  if(p==-1)
+  {
+    printf("\nStack is empty!!");
+  }
+  else
+  {
+    printf("\nDeleted element is %d",stack[p]);
+    p=p-1;
+  }
+}
+ 
+void display()
+{
+  int i;
+  if(p==-1)
+  {
+    printf("\nStack is empty!!");
+  }
+  else
+  {
+    printf("\nStack is...\n");
+    for(i=p;i>=0;--i)
+    printf("%d\n",stack[i]);
+  }
+}
+
