@@ -51,11 +51,14 @@ We disable the -fipa-sra optimize for "do_call" function (with no performance lo
 
 Version 1.0.2: Now we support call_in_stack for member function.
 
+```c++
 std::string a("Hello world");
 call_in_stack(printf, "%s\n", call_in_stack(from_member_fun(a, c_str))) ;
+```
 
 And we support call_in_stack for functor or lambda in C++11!
 
+```c++
 std::string a("Hello world");
 call_in_stack_safe(buf, from_functor(
 	[=](int arg){
@@ -63,5 +66,6 @@ call_in_stack_safe(buf, from_functor(
 		return arg;
 	}
 ),2) ;
+```
 
 That means you can write most of your codes of function in a new stack!
